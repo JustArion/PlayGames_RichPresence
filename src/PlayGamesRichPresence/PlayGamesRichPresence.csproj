@@ -1,0 +1,43 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net8.0-windows</TargetFramework>
+        <LangVersion>latest</LangVersion>
+        <Nullable>enable</Nullable>
+        <UseWindowsForms>true</UseWindowsForms>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <AssemblyName>PlayGames RichPresence</AssemblyName>
+        <RootNamespace>Dawn.PlayGames.RichPresence</RootNamespace>
+        <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
+        <Company>https://github.com/JustArion</Company>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <DebugType>embedded</DebugType>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+      <DebugSymbols>true</DebugSymbols>
+      <DebugType>embedded</DebugType>
+    </PropertyGroup>
+
+    <ItemGroup Label="Winforms Theme">
+      <ProjectReference Include="..\RiotTrayContextTheme\RiotTrayContextTheme.csproj" />
+    </ItemGroup>
+
+    <ItemGroup Label="Other Packages">
+      <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
+      <PackageReference Include="Vanara.PInvoke.Kernel32" Version="4.0.4" />
+      <PackageReference Include="DiscordRichPresence" Version="1.2.1.24" />
+    </ItemGroup>
+
+    <ItemGroup Label="Logs">
+        <PackageReference Include="Serilog.Enrichers.Process" Version="3.0.0" />
+        <PackageReference Include="Serilog.Settings.Configuration" Version="8.0.1" />
+        <PackageReference Include="Serilog.Sinks.Console.LogThemes" Version="0.3.0" />
+        <PackageReference Include="Serilog.Sinks.Seq" Version="8.0.0" />
+        <PackageReference Include="Serilog" Version="4.0.0" />
+    </ItemGroup>
+
+</Project>

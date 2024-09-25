@@ -1,0 +1,1 @@
+﻿global using static Vanara.PInvoke.Kernel32;
