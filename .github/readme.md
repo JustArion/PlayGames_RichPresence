@@ -1,3 +1,7 @@
+### Requirements
+
+[.NET 8.0.X Desktop Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
+
 ### Custom Launch Args
 
 | Argument                 |     Default Value     | Description                                                           |
