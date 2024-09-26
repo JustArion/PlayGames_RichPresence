@@ -1,4 +1,7 @@
-﻿namespace Dawn.PlayGames.RichPresence.PlayGames;
+﻿#define LOG_APP_SESSION_MESSAGES
+using Dawn.PlayGames.RichPresence.Domain;
+
+namespace Dawn.PlayGames.RichPresence.PlayGames;
 
 using System.Text;
 using global::Serilog;
@@ -13,7 +16,7 @@ public class PlayGamesAppSessionMessageReader : IDisposable
     private bool _shouldContinue;
     private FileStream? _fileStream;
 
-    public event Action<string> OnAppSessionMessageReceived = _ => { };
+    public event EventHandler<PlayGamesSessionInfo>? OnSessionInfoReceived;
 
     public void StartAsync()
     {
@@ -29,6 +32,7 @@ public class PlayGamesAppSessionMessageReader : IDisposable
     {
         while (_shouldContinue)
         {
+            Log.Verbose("Doing fresh read-operation pass");
             var filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), FILE_PATH);
 
             // Wait till the file exists
@@ -54,10 +58,11 @@ public class PlayGamesAppSessionMessageReader : IDisposable
                 continue;
             }
 
-            // We read new things being added only.
-            _fileStream.Position = _fileStream.Length;
             using var reader = new StreamReader(_fileStream);
 
+            await CatchUpAsync(reader);
+
+            // We read new things being added from here onwards
             while (_shouldContinue)
             {
                 var line = await reader.ReadLineAsync();
@@ -69,37 +74,90 @@ public class PlayGamesAppSessionMessageReader : IDisposable
                     continue;
                 }
 
-                // This actually worked first try ;) Nice!!
-                if (!line.Contains("AppSessionModule: sessions updated:"))
-                    continue;
-
-                await Task.Delay(TimeSpan.FromSeconds(1));
-
-                var sb = new StringBuilder();
-                sb.AppendLine("{");
-                line = await reader.ReadLineAsync();
-
-                while (!string.IsNullOrWhiteSpace(line) && line != "}")
-                {
-                    sb.AppendLine(line);
-                    line = await reader.ReadLineAsync();
-                }
-
-                sb.AppendLine("}");
-                var appSessionMessage = sb.ToString();
-                // _logger.Debug("Received AppSession Message: \n{Line}", appSessionMessage);
-
-                try
-                {
-                    OnAppSessionMessageReceived?.Invoke(appSessionMessage);
-                }
-                catch (Exception e)
-                {
-                    _logger.Error(e, $"Failed to invoke {nameof(OnAppSessionMessageReceived)}");
-                }
-
+                await ProcessLogChunkAsync(line, reader);
             }
         }
+    }
+
+    /// <summary>
+    /// The method ensures that a Rich Presence will be enabled if a game is running before this program started.
+    /// </summary>
+    /// <param name="reader"></param>
+    private async Task CatchUpAsync(StreamReader reader)
+    {
+        Log.Verbose("Catching up...");
+        PlayGamesSessionInfo? sessionInfo = null;
+
+        while (!reader.EndOfStream)
+        {
+            var line = await reader.ReadLineAsync();
+            if (string.IsNullOrWhiteSpace(line))
+                continue;
+
+            if (!line.Contains("AppSessionModule: sessions updated:"))
+                continue;
+
+            var sb = new StringBuilder();
+            sb.AppendLine("{");
+            line = await reader.ReadLineAsync();
+
+            while (!string.IsNullOrWhiteSpace(line) && line != "}")
+            {
+                sb.AppendLine(line);
+                line = await reader.ReadLineAsync();
+            }
+
+            sb.AppendLine("}");
+            var appSessionMessage = sb.ToString();
+
+            sessionInfo = AppSessionInfoBuilder.Build(appSessionMessage);
+
+            if (sessionInfo?.AppState != AppSessionState.Running)
+                sessionInfo = null;
+        }
+
+        if (sessionInfo == null)
+            Log.Verbose("Caught up, no games are currently running");
+        else
+        {
+            Log.Verbose("Caught up, emitting {SessionInfo}", sessionInfo);
+            OnSessionInfoReceived?.Invoke(this, sessionInfo);
+        }
+    }
+
+    private async Task ProcessLogChunkAsync(string? line, StreamReader reader)
+    {
+        if (string.IsNullOrWhiteSpace(line))
+            return; // This should never happen as the code above ensures it. But for convinience we just add it here too.
+
+        // This actually worked first try ;) Nice!!
+        if (!line.Contains("AppSessionModule: sessions updated:"))
+            return;
+
+        await Task.Delay(TimeSpan.FromSeconds(1));
+
+        var sb = new StringBuilder();
+        sb.AppendLine("{");
+        line = await reader.ReadLineAsync();
+
+        while (!string.IsNullOrWhiteSpace(line) && line != "}")
+        {
+            sb.AppendLine(line);
+            line = await reader.ReadLineAsync();
+        }
+
+        sb.AppendLine("}");
+        var appSessionMessage = sb.ToString();
+        #if LOG_APP_SESSION_MESSAGES
+        _logger.Debug("Received AppSession Message: \n{Line}", appSessionMessage);
+        #endif
+
+        var sessionInfo = AppSessionInfoBuilder.Build(appSessionMessage);
+
+        if (sessionInfo == null)
+            return;
+
+        OnSessionInfoReceived?.Invoke(this, sessionInfo);
     }
 
     public void Stop()

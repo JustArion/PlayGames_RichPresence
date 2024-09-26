@@ -28,26 +28,20 @@ internal static class Program
         _trayIcon.RichPresenceEnabledChanged += OnRichPresenceEnabledChanged;
 
         reader.StartAsync();
-        reader.OnAppSessionMessageReceived += OnAppMessageReceived;
+        reader.OnSessionInfoReceived += SessionInfoReceived;
 
         Application.Run();
     }
 
     private static void OnRichPresenceEnabledChanged(object? sender, bool active)
     {
-        if (!active)
-            _richPresenceHandler.SetPresence(null);
-    }
-
-    private static void OnAppMessageReceived(string message)
-    {
-        var sessionInfo = AppSessionInfoBuilder.Build(message);
-
-        if (sessionInfo == null)
+        if (active)
             return;
 
-        Task.Run(()=> SetPresenceFromSessionInfoAsync(sessionInfo));
+        _richPresenceHandler.RemovePresence();
     }
+
+    private static void SessionInfoReceived(object? sender, PlayGamesSessionInfo sessionInfo) => Task.Run(()=> SetPresenceFromSessionInfoAsync(sessionInfo));
 
     private static AppSessionState _currentState;
     private static async ValueTask SetPresenceFromSessionInfoAsync(PlayGamesSessionInfo sessionInfo)
@@ -70,15 +64,16 @@ internal static class Program
         if (_currentState != sessionInfo.AppState)
             Log.Information("Clearing Rich Presence for {GameTitle}", sessionInfo.Title);
 
-        _richPresenceHandler.ClearPresence();
+        _richPresenceHandler.RemovePresence();
     }
 
     private static async Task SetPresenceAsRunning(PlayGamesSessionInfo sessionInfo)
     {
-        var iconUrl = await PlayGamesAppIconScraper.GetIconLink(sessionInfo.PackageName).AsTask();
 
-        if (_currentState != sessionInfo.AppState)
-            Log.Information("Setting Rich Presence for {GameTitle}", sessionInfo.Title);
+        if (_currentState == sessionInfo.AppState)
+            return;
+
+        var iconUrl = await PlayGamesAppIconScraper.GetIconLink(sessionInfo.PackageName);
 
         if (string.IsNullOrWhiteSpace(iconUrl))
             _richPresenceHandler.SetPresence(new()
