@@ -1,4 +1,5 @@
-﻿namespace Dawn.PlayGames.RichPresence.DiscordRichPresence;
+﻿// #define LISTEN_TO_RPCS
+namespace Dawn.PlayGames.RichPresence.DiscordRichPresence;
 
 using DiscordRPC;
 using global::Serilog;
@@ -39,14 +40,17 @@ public class RichPresenceHandler : IDisposable
         {
             var customApplicationId = arg.Split('=');
 
-            if (customApplicationId.Length > 1 && long.TryParse(customApplicationId[1], out _)) 
+            if (customApplicationId.Length > 1 && long.TryParse(customApplicationId[1], out _))
                 applicationId = customApplicationId[1];
         }
-        
+
         _client = new DiscordRpcClient(applicationId, -1, (SerilogToDiscordLogger)_logger);
 
         _client.SkipIdenticalPresence = true;
         _client.Initialize();
+        #if LISTEN_TO_RPCS
+        _client.OnRpcMessage += (_, msg) => Log.Debug("Received RPC Message: {@Message}", msg);
+        #endif
     }
 
     public void Dispose()

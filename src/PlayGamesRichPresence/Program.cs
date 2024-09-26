@@ -44,11 +44,11 @@ internal static class Program
     private static AppSessionState _currentState;
     private static async Task SetPresenceFromSessionInfoAsync(PlayGamesSessionInfo sessionInfo)
     {
-        var iconUrl = await PlayGamesAppIconScraper.GetIconLink(sessionInfo.PackageName).AsTask();
 
         switch (sessionInfo.AppState)
         {
             case AppSessionState.Running:
+                var iconUrl = await PlayGamesAppIconScraper.GetIconLink(sessionInfo.PackageName).AsTask();
 
                 if (_currentState != sessionInfo.AppState)
                     Log.Information("Setting Rich Presence for {GameTitle}", sessionInfo.Title);
