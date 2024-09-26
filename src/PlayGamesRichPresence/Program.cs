@@ -50,46 +50,54 @@ internal static class Program
     }
 
     private static AppSessionState _currentState;
-    private static async Task SetPresenceFromSessionInfoAsync(PlayGamesSessionInfo sessionInfo)
+    private static async ValueTask SetPresenceFromSessionInfoAsync(PlayGamesSessionInfo sessionInfo)
     {
 
         switch (sessionInfo.AppState)
         {
             case AppSessionState.Running:
-                var iconUrl = await PlayGamesAppIconScraper.GetIconLink(sessionInfo.PackageName).AsTask();
-
-                if (_currentState != sessionInfo.AppState)
-                    Log.Information("Setting Rich Presence for {GameTitle}", sessionInfo.Title);
-                if (string.IsNullOrWhiteSpace(iconUrl))
-                {
-                    _richPresenceHandler.SetPresence(new()
-                    {
-                        Details = sessionInfo.Title,
-                        Timestamps = new Timestamps(sessionInfo.StartTime.DateTime),
-                        Buttons = [ new () { Label = "Open Play Store", Url = $"https://play.google.com/store/apps/details?id={sessionInfo.PackageName}" }]
-                    });
-                }
-                else
-                {
-                    _richPresenceHandler.SetPresence(new()
-                    {
-                        Details = sessionInfo.Title,
-                        Timestamps = new Timestamps(sessionInfo.StartTime.DateTime),
-                        Assets = new()
-                        {
-                            LargeImageKey = iconUrl,
-                            LargeImageText = sessionInfo.PackageName
-                        },
-                        Buttons = [ new () { Label = "Open Play Store", Url = $"https://play.google.com/store/apps/details?id={sessionInfo.PackageName}" }]
-                    });
-                }
+                await SetPresenceAsRunning(sessionInfo);
                 break;
             case AppSessionState.Stopped or AppSessionState.Stopping:
-                if (_currentState != sessionInfo.AppState)
-                    Log.Information("Clearing Rich Presence for {GameTitle}", sessionInfo.Title);
-                _richPresenceHandler.ClearPresence();
+                ClearPresence(sessionInfo);
                 break;
         }
         _currentState = sessionInfo.AppState;
+    }
+
+    private static void ClearPresence(PlayGamesSessionInfo sessionInfo)
+    {
+        if (_currentState != sessionInfo.AppState)
+            Log.Information("Clearing Rich Presence for {GameTitle}", sessionInfo.Title);
+
+        _richPresenceHandler.ClearPresence();
+    }
+
+    private static async Task SetPresenceAsRunning(PlayGamesSessionInfo sessionInfo)
+    {
+        var iconUrl = await PlayGamesAppIconScraper.GetIconLink(sessionInfo.PackageName).AsTask();
+
+        if (_currentState != sessionInfo.AppState)
+            Log.Information("Setting Rich Presence for {GameTitle}", sessionInfo.Title);
+
+        if (string.IsNullOrWhiteSpace(iconUrl))
+            _richPresenceHandler.SetPresence(new()
+            {
+                Details = sessionInfo.Title,
+                Timestamps = new Timestamps(sessionInfo.StartTime.DateTime),
+                Buttons = [ new () { Label = "Open Play Store", Url = $"https://play.google.com/store/apps/details?id={sessionInfo.PackageName}" }]
+            });
+        else
+            _richPresenceHandler.SetPresence(new()
+            {
+                Details = sessionInfo.Title,
+                Timestamps = new Timestamps(sessionInfo.StartTime.DateTime),
+                Assets = new()
+                {
+                    LargeImageKey = iconUrl,
+                    LargeImageText = sessionInfo.PackageName
+                },
+                Buttons = [ new () { Label = "Open Play Store", Url = $"https://play.google.com/store/apps/details?id={sessionInfo.PackageName}" }]
+            });
     }
 }
