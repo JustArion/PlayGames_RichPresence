@@ -1,3 +1,6 @@
+using Dawn.PlayGames.RichPresence.Logging;
+using Dawn.PlayGames.RichPresence.PlayGames;
+
 namespace Dawn.PlayGames.RichPresence;
 
 using System.Diagnostics.CodeAnalysis;
@@ -5,8 +8,6 @@ using DiscordRichPresence;
 using DiscordRPC;
 using Domain;
 using global::Serilog;
-using Logs;
-using Logs.PlayGames;
 using Tray;
 
 [SuppressMessage("ReSharper", "NotAccessedField.Local")]

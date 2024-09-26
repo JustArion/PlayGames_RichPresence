@@ -1,4 +1,4 @@
-﻿namespace Dawn.PlayGames.RichPresence.Logs.PlayGames;
+﻿namespace Dawn.PlayGames.RichPresence.PlayGames;
 
 using System.Globalization;
 using System.Text.RegularExpressions;
@@ -17,23 +17,23 @@ internal static partial class AppSessionInfoBuilder
         var titleMatch = TitleRegex().Match(info);
         if (!titleMatch.Success)
             return null;
-        
+
         var startedTimestampMatch = StartedTimestampRegex().Match(info);
         if (!startedTimestampMatch.Success)
             return null;
-        
+
         var stateMatch = AppSessionStateRegex().Match(info);
         if (!stateMatch.Success)
             return null;
-        
+
         var startedTimestampAsString = startedTimestampMatch.Groups[1].Value.Replace("\r", string.Empty);
-        
+
         if (!DateTimeOffset.TryParseExact(startedTimestampAsString, STARTED_TIMESTAMP_FORMAT, null, DateTimeStyles.None , out var startedTimestamp))
         {
             Log.Warning("Failed to parse started timestamp: {StartedTimestampString}", startedTimestampAsString);
             return null;
         }
-        
+
         var stateAsString = stateMatch.Groups[1].Value.Replace("\r", string.Empty);
 
         if (!Enum.TryParse<AppSessionState>(stateAsString, out var appState))
@@ -41,10 +41,10 @@ internal static partial class AppSessionInfoBuilder
             Log.Warning("Failed to parse app state: {AppStateString}", stateAsString);
             return null;
         }
-        
+
         var packageName = packageNameMatch.Groups[1].Value.Replace("\r", string.Empty);
         var title = titleMatch.Groups[1].Value.Replace("\r", string.Empty);
-        
+
         return new PlayGamesSessionInfo(packageName, startedTimestamp, title, appState);
     }
 

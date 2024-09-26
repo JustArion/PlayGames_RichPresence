@@ -1,4 +1,4 @@
-﻿namespace Dawn.PlayGames.RichPresence.Logs;
+﻿namespace Dawn.PlayGames.RichPresence.Logging;
 
 using global::Serilog;
 using global::Serilog.Core;
@@ -26,7 +26,7 @@ internal static class ApplicationLogs
 
         if (!Console.IsOutputRedirected)
         {
-            var stdout = new StreamWriter(Console.OpenStandardOutput()) 
+            var stdout = new StreamWriter(Console.OpenStandardOutput())
                 { AutoFlush = true };
             Console.SetOut(stdout);
         }
@@ -49,9 +49,9 @@ internal static class ApplicationLogs
                     ? LogEventLevel.Verbose
                     : LogEventLevel.Warning,
                 flushToDiskInterval: TimeSpan.FromSeconds(1));
-            
-            
-            
+
+
+
             #if RELEASE
             if (args.FirstOrDefault(a => a.StartsWith("--seq-url=")) is { } seqArg)
             {
@@ -80,7 +80,7 @@ internal static class ApplicationLogs
             AppDomain.CurrentDomain.ProcessExit +=
                 (_, _) => Log.Information("Shutting Down...");
             #endif
-            
+
             Log.Information("Initialized");
         }
         catch (Exception e)

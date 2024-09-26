@@ -1,4 +1,4 @@
-﻿namespace Dawn.PlayGames.RichPresence.Logs.PlayGames;
+﻿namespace Dawn.PlayGames.RichPresence.PlayGames;
 
 using System.Text.RegularExpressions;
 using global::Serilog;
@@ -16,7 +16,7 @@ public static partial class PlayGamesAppIconScraper
             using var client = new HttpClient();
 
             var storePageContent = await client.GetStringAsync($"https://play.google.com/store/apps/details?id={packageName}");
-            
+
             var match = GetImageRegex().Match(storePageContent);
 
             if (!match.Success)
@@ -24,7 +24,7 @@ public static partial class PlayGamesAppIconScraper
                 Log.Warning("Failed to find icon link for {PackageName}", packageName);
                 return string.Empty;
             }
-            
+
             var imageLink = match.Groups[1].Value;
             _iconLinks.TryAdd(packageName, imageLink);
             return imageLink;

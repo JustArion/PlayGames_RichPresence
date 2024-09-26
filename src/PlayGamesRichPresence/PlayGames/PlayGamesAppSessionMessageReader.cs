@@ -1,4 +1,4 @@
-﻿namespace Dawn.PlayGames.RichPresence.Logs.PlayGames;
+﻿namespace Dawn.PlayGames.RichPresence.PlayGames;
 
 using System.Text;
 using global::Serilog;
@@ -21,7 +21,7 @@ public class PlayGamesAppSessionMessageReader : IDisposable
             return;
         _started = true;
         _shouldContinue = true;
-        
+
         Task.Factory.StartNew(DoReadOperation, TaskCreationOptions.LongRunning);
     }
 
@@ -49,7 +49,7 @@ public class PlayGamesAppSessionMessageReader : IDisposable
                 _logger.Error(e, "Failed to open file: {FilePath}", filePath);
                 if (_fileStream != null)
                     await _fileStream.DisposeAsync().AsTask();
-                
+
                 await Task.Delay(TimeSpan.FromSeconds(5));
                 continue;
             }
@@ -63,22 +63,22 @@ public class PlayGamesAppSessionMessageReader : IDisposable
                 var line = await reader.ReadLineAsync();
                 if (string.IsNullOrWhiteSpace(line))
                 {
-                    
+
                     // 'Polling' limiter
                     await Task.Delay(TimeSpan.FromSeconds(1));
                     continue;
                 }
 
                 // This actually worked first try ;) Nice!!
-                if (!line.Contains("AppSessionModule: sessions updated:")) 
+                if (!line.Contains("AppSessionModule: sessions updated:"))
                     continue;
-                
+
                 await Task.Delay(TimeSpan.FromSeconds(1));
-                    
+
                 var sb = new StringBuilder();
                 sb.AppendLine("{");
                 line = await reader.ReadLineAsync();
-                    
+
                 while (!string.IsNullOrWhiteSpace(line) && line != "}")
                 {
                     sb.AppendLine(line);
