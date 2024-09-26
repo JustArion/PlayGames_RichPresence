@@ -1,4 +1,4 @@
-﻿// #define LISTEN_TO_RPCS
+﻿#define LISTEN_TO_RPCS
 namespace Dawn.PlayGames.RichPresence.DiscordRichPresence;
 
 using DiscordRPC;
@@ -16,17 +16,31 @@ public class RichPresenceHandler : IDisposable
     {
         InitializeUnderlyingClient();
         AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
+
+        Task.Factory.StartNew(SyncTick, TaskCreationOptions.LongRunning);
+    }
+
+    private async Task SyncTick()
+    {
+        var timer = new PeriodicTimer(TimeSpan.FromSeconds(1));
+
+        while (_client.IsInitialized && await timer.WaitForNextTickAsync())
+            _client.Invoke();
     }
 
     private void OnProcessExit(object? sender, EventArgs e) => Dispose();
 
     public void SetPresence(RichPresence? presence)
     {
+        if (presence != null)
+            Log.Information("Setting Rich Presence for {GameTitle}", presence.Details);
+
         _client.SetPresence(presence);
     }
 
-    public void ClearPresence()
+    public void RemovePresence()
     {
+        Log.Information("Clearing Rich Presence");
         _client.SetPresence(null);
     }
 
@@ -44,7 +58,7 @@ public class RichPresenceHandler : IDisposable
                 applicationId = customApplicationId[1];
         }
 
-        _client = new DiscordRpcClient(applicationId, -1, (SerilogToDiscordLogger)_logger);
+        _client = new DiscordRpcClient(applicationId, pipe: -1, (SerilogToDiscordLogger)_logger, autoEvents: false);
 
         _client.SkipIdenticalPresence = true;
         _client.Initialize();
