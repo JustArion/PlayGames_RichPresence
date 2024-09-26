@@ -8,7 +8,7 @@
 |:-------------------------|:---------------------:|:----------------------------------------------------------------------|
 | --custom-application-id= |  1204167311922167860  | [Discord Application Id](https://discord.com/developers/applications) |
 | --seq-url=               | http://localhost:9999 | Seq Logging Platform                                                  |
-| --extended-logging       |         `N/A`         | Seq Log Level: Verbose (From Warning)                                 |
+| --extended-logging       |         `N/A`         | File Log Level: Verbose (From Warning)                                |
 | --rp-disabled-on-start   |         `N/A`         | Rich Presence is Disabled for *Play Games*                            |
 
 **Launch Args Example**
