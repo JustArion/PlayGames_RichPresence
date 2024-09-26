@@ -93,10 +93,8 @@ public class RichPresence_Tray
                 : $"{Environment.CommandLine} {RICH_PRESENCE_DISABLED_COMMAND_LINE_ARGUMENT}");
     }
 
-    private ToolStripMenuItem HideTray()
-    {
-        return new ToolStripMenuItem("Hide Tray", null, (_, _) => Tray.Visible = false);
-    }
+    private ToolStripMenuItem HideTray() => new("Hide Tray", null, (_, _) => Tray.Visible = false);
+
     private ToolStripMenuItem RunOnStartup()
     {
         var startup = new ToolStripMenuItem("Run on Startup");
@@ -115,10 +113,7 @@ public class RichPresence_Tray
         return startup;
     }
 
-    private ToolStripMenuItem Exit()
-    {
-        return new ToolStripMenuItem("Exit", null, (_, _) => Tray.Dispose());
-    }
+    private ToolStripMenuItem Exit() => new("Exit", null, (_, _) => Tray.Dispose());
 
     private ToolStripItem[] Header()
     {

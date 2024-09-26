@@ -34,8 +34,5 @@ public class SerilogToDiscordLogger(ILogger logger) : DiscordRPC.Logging.ILogger
 
     public LogLevel Level { get; set; } = LogLevel.Error;
     
-    public static explicit operator SerilogToDiscordLogger(Logger logger)
-    {
-        return new SerilogToDiscordLogger(logger);
-    }
+    public static explicit operator SerilogToDiscordLogger(Logger logger) => new(logger);
 }
