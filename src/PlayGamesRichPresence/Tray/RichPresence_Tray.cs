@@ -15,7 +15,7 @@ public class RichPresence_Tray
         Tray.Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
         Tray.Text = Application.ProductName;
         Tray.Visible = true;
-            
+
         AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
         Tray.Disposed += OnTrayDisposed;
 
@@ -51,16 +51,19 @@ public class RichPresence_Tray
         {
             item.Click += (_, _) => Log.Verbose("OnMenuItemClick: {MenuItemText}", item.Text);
 
-            if (item is ToolStripMenuItem menuItem) 
+            if (item is ToolStripMenuItem menuItem)
                 LogInteractionsRecursively(menuItem.DropDownItems);
         }
     }
 
     private const string RICH_PRESENCE_DISABLED_COMMAND_LINE_ARGUMENT = "--rp-disabled-on-start";
+
+    public event EventHandler<bool> RichPresenceEnabledChanged = delegate { };
+
     private ToolStripMenuItem Enabled()
     {
         ApplicationFeatures.SyncFeature(f => f.RichPresenceEnabled, !Environment.GetCommandLineArgs().Contains(RICH_PRESENCE_DISABLED_COMMAND_LINE_ARGUMENT));
-        
+
         var enabledItem = new ToolStripMenuItem("Enabled");
         enabledItem.Checked = ApplicationFeatures.GetFeature(f => f.RichPresenceEnabled);
 
@@ -72,6 +75,8 @@ public class RichPresence_Tray
 
             ApplicationFeatures.SetFeature(f => f.RichPresenceEnabled, enabled);
             enabledItem.Checked = enabled;
+
+            RichPresenceEnabledChanged.Invoke(this, enabled);
         };
 
         return enabledItem;
@@ -103,7 +108,7 @@ public class RichPresence_Tray
                 Startup.RemoveStartup(Application.ProductName!);
             else
                 Startup.StartWithWindows(Application.ProductName!, Environment.CommandLine);
-            
+
             startup.Checked = !startup.Checked;
         };
 

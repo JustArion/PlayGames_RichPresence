@@ -20,7 +20,7 @@ public class RichPresenceHandler : IDisposable
 
     private void OnProcessExit(object? sender, EventArgs e) => Dispose();
 
-    public void SetPresence(RichPresence presence)
+    public void SetPresence(RichPresence? presence)
     {
         _client.SetPresence(presence);
     }

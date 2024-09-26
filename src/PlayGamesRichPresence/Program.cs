@@ -25,11 +25,18 @@ internal static class Program
         var reader = new PlayGamesAppSessionMessageReader();
 
         _trayIcon = new();
+        _trayIcon.RichPresenceEnabledChanged += OnRichPresenceEnabledChanged;
 
         reader.StartAsync();
         reader.OnAppSessionMessageReceived += OnAppMessageReceived;
 
         Application.Run();
+    }
+
+    private static void OnRichPresenceEnabledChanged(object? sender, bool active)
+    {
+        if (!active)
+            _richPresenceHandler.SetPresence(null);
     }
 
     private static void OnAppMessageReceived(string message)
