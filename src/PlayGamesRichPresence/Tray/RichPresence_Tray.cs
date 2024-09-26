@@ -100,7 +100,7 @@ public class RichPresence_Tray
     private ToolStripMenuItem RunOnStartup()
     {
         var startup = new ToolStripMenuItem("Run on Startup");
-        startup.Checked = Startup.ValidateStartsWithWindows(Application.ProductName!, Environment.CommandLine);
+        startup.Checked = Startup.StartsWithWindows(Application.ProductName!);
 
         startup.Click += delegate
         {
