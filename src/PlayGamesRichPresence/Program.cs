@@ -21,6 +21,8 @@ internal static class Program
     {
         ApplicationLogs.Initialize();
 
+        SingleInstanceApplication.Ensure();
+
         _richPresenceHandler = new();
         var reader = new PlayGamesAppSessionMessageReader();
 
