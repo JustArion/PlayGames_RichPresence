@@ -1,5 +1,6 @@
 ﻿#define LOG_APP_SESSION_MESSAGES
 using Dawn.PlayGames.RichPresence.Domain;
+using Dawn.Serilog.CustomEnrichers;
 
 namespace Dawn.PlayGames.RichPresence.PlayGames;
 
@@ -60,7 +61,8 @@ public class PlayGamesAppSessionMessageReader : IDisposable
 
             using var reader = new StreamReader(_fileStream);
 
-            await CatchUpAsync(reader);
+            using (Warn.OnLongerThan(TimeSpan.FromSeconds(2), "Catch-Up took unusually long"))
+                await CatchUpAsync(reader);
 
             // We read new things being added from here onwards
             while (_shouldContinue)
