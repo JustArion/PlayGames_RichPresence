@@ -45,25 +45,54 @@ internal static class Program
 
     private static void SessionInfoReceived(object? sender, PlayGamesSessionInfo sessionInfo) => Task.Run(()=> SetPresenceFromSessionInfoAsync(sessionInfo));
 
-    private static AppSessionState _currentState;
+    private static AppSessionState _currentAppState;
     private static async ValueTask SetPresenceFromSessionInfoAsync(PlayGamesSessionInfo sessionInfo)
     {
+
+        if (_currentAppState == sessionInfo.AppState)
+            return;
 
         switch (sessionInfo.AppState)
         {
             case AppSessionState.Running:
                 await SetPresenceAsRunning(sessionInfo);
                 break;
+            case AppSessionState.Starting:
+                await SetPresenceAsStarting(sessionInfo);
+                break;
             case AppSessionState.Stopped or AppSessionState.Stopping:
                 ClearPresence(sessionInfo);
                 break;
         }
-        _currentState = sessionInfo.AppState;
+
+
+        _currentAppState = sessionInfo.AppState;
+    }
+
+    private static async Task SetPresenceAsStarting(PlayGamesSessionInfo sessionInfo)
+    {
+        var iconUrl = await PlayGamesAppIconScraper.TryGetIconLinkAsync(sessionInfo.PackageName);
+
+        if (string.IsNullOrWhiteSpace(iconUrl))
+            _richPresenceHandler.SetPresence(new()
+            {
+                Details = sessionInfo.Title,
+            });
+        else
+            _richPresenceHandler.SetPresence(new()
+            {
+                Details = sessionInfo.Title,
+                Assets = new()
+                {
+                    LargeImageKey = iconUrl,
+                    LargeImageText = sessionInfo.PackageName
+                },
+            });
     }
 
     private static void ClearPresence(PlayGamesSessionInfo sessionInfo)
     {
-        if (_currentState != sessionInfo.AppState)
+        if (_currentAppState != sessionInfo.AppState)
             Log.Information("Clearing Rich Presence for {GameTitle}", sessionInfo.Title);
 
         _richPresenceHandler.RemovePresence();
@@ -71,18 +100,13 @@ internal static class Program
 
     private static async Task SetPresenceAsRunning(PlayGamesSessionInfo sessionInfo)
     {
-
-        if (_currentState == sessionInfo.AppState)
-            return;
-
-        var iconUrl = await PlayGamesAppIconScraper.GetIconLink(sessionInfo.PackageName);
+        var iconUrl = await PlayGamesAppIconScraper.TryGetIconLinkAsync(sessionInfo.PackageName);
 
         if (string.IsNullOrWhiteSpace(iconUrl))
             _richPresenceHandler.SetPresence(new()
             {
                 Details = sessionInfo.Title,
                 Timestamps = new Timestamps(sessionInfo.StartTime.DateTime),
-                Buttons = [ new () { Label = "Open Play Store", Url = $"https://play.google.com/store/apps/details?id={sessionInfo.PackageName}" }]
             });
         else
             _richPresenceHandler.SetPresence(new()
@@ -94,7 +118,6 @@ internal static class Program
                     LargeImageKey = iconUrl,
                     LargeImageText = sessionInfo.PackageName
                 },
-                Buttons = [ new () { Label = "Open Play Store", Url = $"https://play.google.com/store/apps/details?id={sessionInfo.PackageName}" }]
             });
     }
 }
