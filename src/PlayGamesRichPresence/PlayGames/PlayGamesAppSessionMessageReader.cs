@@ -88,6 +88,7 @@ public class PlayGamesAppSessionMessageReader : IDisposable
     private async Task CatchUpAsync(StreamReader reader)
     {
         Log.Verbose("Catching up...");
+        var events = 0;
         PlayGamesSessionInfo? sessionInfo = null;
 
         while (!reader.EndOfStream)
@@ -113,16 +114,17 @@ public class PlayGamesAppSessionMessageReader : IDisposable
             var appSessionMessage = sb.ToString();
 
             sessionInfo = AppSessionInfoBuilder.Build(appSessionMessage);
+            events++;
 
             if (sessionInfo?.AppState != AppSessionState.Running)
                 sessionInfo = null;
         }
 
         if (sessionInfo == null)
-            Log.Verbose("Caught up, no games are currently running");
+            Log.Verbose("Caught up, no games are currently running (Processed {EventsProcessed} events)", events);
         else
         {
-            Log.Verbose("Caught up, emitting {SessionInfo}", sessionInfo);
+            Log.Verbose("Caught up (Processed {EventsProcessed} events), emitting {SessionInfo}", events, sessionInfo);
             OnSessionInfoReceived?.Invoke(this, sessionInfo);
         }
     }
