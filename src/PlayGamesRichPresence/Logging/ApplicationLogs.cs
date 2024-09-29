@@ -11,7 +11,9 @@ internal static class ApplicationLogs
     private const string LOGGING_FORMAT =
         "{Level:u1} {Timestamp:yyyy-MM-dd HH:mm:ss.ffffff}   [{Source}] {Message:lj}{NewLine}{Exception}";
 
+    #if RELEASE
     private const string DEFAULT_SEQ_URL = "http://localhost:9999";
+    #endif
     private static bool _initialized;
 
     public static void Initialize()
@@ -43,7 +45,7 @@ internal static class ApplicationLogs
                 .WriteTo.Console(outputTemplate: LOGGING_FORMAT, theme: BlizzardTheme.GetTheme,
                     restrictedToMinimumLevel: LogEventLevel.Verbose,
                     applyThemeToRedirectedOutput: true, standardErrorFromLevel: LogEventLevel.Error)
-                .WriteTo.File($"{Application.ProductName}.log",
+                .WriteTo.File(Path.Combine(AppContext.BaseDirectory, $"{Application.ProductName}.log"),
                 outputTemplate: LOGGING_FORMAT,
                 restrictedToMinimumLevel: args.Contains("--extended-logging")
                     ? LogEventLevel.Verbose
