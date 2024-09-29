@@ -1,12 +1,13 @@
-﻿namespace Dawn.PlayGames.RichPresence.PlayGames;
+﻿using System.Collections.Concurrent;
+
+namespace Dawn.PlayGames.RichPresence.PlayGames;
 
 using System.Text.RegularExpressions;
-using global::Serilog;
 
 public static partial class PlayGamesAppIconScraper
 {
-    private static readonly Dictionary<string, string> _iconLinks = new();
-    public static async ValueTask<string> GetIconLink(string packageName)
+    private static readonly ConcurrentDictionary<string, string> _iconLinks = new();
+    public static async ValueTask<string> TryGetIconLinkAsync(string packageName)
     {
         if (_iconLinks.TryGetValue(packageName, out var link))
             return link;
