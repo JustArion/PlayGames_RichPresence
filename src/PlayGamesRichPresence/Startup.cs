@@ -10,11 +10,15 @@ public static class Startup
     {
         using var startupKey = Registry.CurrentUser.OpenSubKey(STARTUP_SUBKEY, true)!;
         startupKey.SetValue(key, pathAndArgs);
+
+        Log.Verbose("Added {Key} to startup registry, with value: {Value}", key, pathAndArgs);
     }
     public static void RemoveStartup(string key)
     {
         using var startupKey = Registry.CurrentUser.OpenSubKey(STARTUP_SUBKEY, true)!;
         startupKey.DeleteValue(key, false);
+
+        Log.Verbose("Removed {Key} from startup registry", key);
     }
     // ---
 
