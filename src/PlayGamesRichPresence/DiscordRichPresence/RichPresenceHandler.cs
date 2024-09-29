@@ -16,16 +16,6 @@ public class RichPresenceHandler : IDisposable
     {
         InitializeUnderlyingClient();
         AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
-
-        Task.Factory.StartNew(SyncTick, TaskCreationOptions.LongRunning);
-    }
-
-    private async Task SyncTick()
-    {
-        var timer = new PeriodicTimer(TimeSpan.FromSeconds(1));
-
-        while (_client.IsInitialized && await timer.WaitForNextTickAsync())
-            _client.Invoke();
     }
 
     private void OnProcessExit(object? sender, EventArgs e) => Dispose();
@@ -58,7 +48,7 @@ public class RichPresenceHandler : IDisposable
                 applicationId = customApplicationId[1];
         }
 
-        _client = new DiscordRpcClient(applicationId, pipe: -1, (SerilogToDiscordLogger)_logger, autoEvents: false);
+        _client = new DiscordRpcClient(applicationId, logger: (SerilogToDiscordLogger)_logger);
 
         _client.SkipIdenticalPresence = true;
         _client.Initialize();
