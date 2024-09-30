@@ -14,7 +14,10 @@
     - _Can_ create a single registry key (`\HKCU\Software\Microsoft\Windows\CurrentVersion\Run\PlayGames RichPresence`) 
       - Default is off, configurable by the user
   - `Read Access`
-    - Reads the file (`AppData/Local/Google/Play Games/Service.log`) if it exists | ( See [Technical-Document](technical-1.md) )
+    - Reads the file (`AppData/Local/Google/Play Games/Service.log`) if it exists
+      - See [Technical-Document](technical-1.md)
+    - Reads directory changes for a single directory (`AppData/Local/Google/Play Games/`)
+      - The "File System Watcher" watches for changes on `Service.log` only
     - Reads a single registry key (`\HKCU\Software\Microsoft\Windows\CurrentVersion\Run\PlayGames RichPresence`) 
       - Run on Startup
 - `Network`
