@@ -45,6 +45,8 @@ public class PlayGamesAppSessionMessageReader : IDisposable
         _logFileWatcher.Changed += LogFileWatcherOnFileChanged;
         _logFileWatcher.Error += LogFileWatcherOnError;
 
+
+        _reading = true;
         await using var fs = File.Open(_filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
         using var reader = new StreamReader(fs);
 
@@ -57,6 +59,7 @@ public class PlayGamesAppSessionMessageReader : IDisposable
             _lastStreamPosition = fs.Position;
         }
 
+        _reading = false;
         _logFileWatcher.EnableRaisingEvents = true;
     }
 
@@ -87,6 +90,7 @@ public class PlayGamesAppSessionMessageReader : IDisposable
             {
                 var line = await reader.ReadLineAsync();
 
+                _lastStreamPosition = reader.BaseStream.Position;
                 await ProcessLogChunkAsync(line, reader);
             }
         }
