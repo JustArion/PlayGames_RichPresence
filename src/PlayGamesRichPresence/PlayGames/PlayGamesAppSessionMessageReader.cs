@@ -50,17 +50,20 @@ public class PlayGamesAppSessionMessageReader : IDisposable
         await using var fs = File.Open(_filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
         using var reader = new StreamReader(fs);
 
-        // We read the old entries (To check if there's a game currently running)
-        if (_lastStreamPosition == default)
-        {
-            using (Warn.OnLongerThan(TimeSpan.FromSeconds(2), "Catch-Up took unusually long"))
-                await CatchUpAsync(reader);
-
-            _lastStreamPosition = fs.Position;
-        }
+        await CatchUpSync(reader, fs);
 
         _reading = false;
         _logFileWatcher.EnableRaisingEvents = true;
+    }
+
+    private async Task CatchUpSync(StreamReader reader, FileStream fs)
+    {
+        // We read the old entries (To check if there's a game currently running)
+        using (Warn.OnLongerThan(TimeSpan.FromSeconds(2), "Catch-Up took unusually long"))
+            await CatchUpAsync(reader);
+        _lastStreamPosition = fs.Position;
+
+        Log.Debug("Stream position is currently at {Position}", fs.Position);
     }
 
     private void LogFileWatcherOnError(object sender, ErrorEventArgs e) => _logger.Error(e.GetException(), "File watcher error");
@@ -81,6 +84,13 @@ public class PlayGamesAppSessionMessageReader : IDisposable
         {
             await using var fs = File.Open(_filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
             using var reader = new StreamReader(fs);
+
+            if (_lastStreamPosition > fs.Length)
+            {
+                Log.Verbose("File was truncated, resetting stream position");
+                await CatchUpSync(reader, fs);
+                return;
+            }
 
             // We read new things being added from here onwards
             fs.Seek(_lastStreamPosition, SeekOrigin.Begin);
@@ -109,6 +119,7 @@ public class PlayGamesAppSessionMessageReader : IDisposable
         Log.Verbose("Catching up...");
         var events = 0;
         PlayGamesSessionInfo? sessionInfo = null;
+        reader.BaseStream.Seek(0, SeekOrigin.Begin);
 
         while (!reader.EndOfStream)
         {
