@@ -11,12 +11,12 @@ using FileAccess = System.IO.FileAccess;
 public class PlayGamesAppSessionMessageReader : IDisposable
 {
     private readonly ILogger _logger = Log.ForContext<PlayGamesAppSessionMessageReader>();
+    private readonly string _filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), FILE_PATH);
     private const string FILE_PATH = @"Google\Play Games\Logs\Service.log";
 
     private bool _started;
-    private bool _shouldContinue;
-    private FileStream? _fileStream;
-
+    private long _lastStreamPosition;
+    private readonly FileSystemWatcher _logFileWatcher = new();
     public event EventHandler<PlayGamesSessionInfo>? OnSessionInfoReceived;
 
     public void StartAsync()
@@ -24,60 +24,75 @@ public class PlayGamesAppSessionMessageReader : IDisposable
         if (_started)
             return;
         _started = true;
-        _shouldContinue = true;
 
-        Task.Factory.StartNew(DoReadOperation, TaskCreationOptions.LongRunning);
+        Task.Factory.StartNew(InitiateWatchOperation, TaskCreationOptions.LongRunning);
     }
 
-    private async Task DoReadOperation()
+    private async Task InitiateWatchOperation()
     {
-        while (_shouldContinue)
+        Log.Verbose("Doing fresh read-operation pass");
+
+        // Wait till the file exists
+        if (!File.Exists(_filePath))
         {
-            Log.Verbose("Doing fresh read-operation pass");
-            var filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), FILE_PATH);
+            _logger.Debug("File not found: {FilePath}", FILE_PATH);
+            await Task.Delay(TimeSpan.FromSeconds(5));
+        }
 
-            // Wait till the file exists
-            if (!File.Exists(filePath))
-            {
-                _logger.Debug("File not found: {FilePath}", FILE_PATH);
-                await Task.Delay(TimeSpan.FromSeconds(5));
-                continue;
-            }
+        _logFileWatcher.Path = Path.GetDirectoryName(_filePath)!;
+        _logFileWatcher.Filter = Path.GetFileName(_filePath);
+        _logFileWatcher.NotifyFilter = NotifyFilters.LastWrite;
+        _logFileWatcher.Changed += LogFileWatcherOnFileChanged;
+        _logFileWatcher.Error += LogFileWatcherOnError;
 
-            // Wait till we can open the file
-            try
-            {
-                _fileStream = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-            }
-            catch (Exception e)
-            {
-                _logger.Error(e, "Failed to open file: {FilePath}", filePath);
-                if (_fileStream != null)
-                    await _fileStream.DisposeAsync().AsTask();
+        await using var fs = File.Open(_filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        using var reader = new StreamReader(fs);
 
-                await Task.Delay(TimeSpan.FromSeconds(5));
-                continue;
-            }
-
-            using var reader = new StreamReader(_fileStream);
-
+        // We read the old entries (To check if there's a game currently running)
+        if (_lastStreamPosition == default)
+        {
             using (Warn.OnLongerThan(TimeSpan.FromSeconds(2), "Catch-Up took unusually long"))
                 await CatchUpAsync(reader);
 
+            _lastStreamPosition = fs.Position;
+        }
+
+        _logFileWatcher.EnableRaisingEvents = true;
+    }
+
+    private void LogFileWatcherOnError(object sender, ErrorEventArgs e) => _logger.Error(e.GetException(), "File watcher error");
+
+    private bool _reading;
+    private void LogFileWatcherOnFileChanged(object sender, FileSystemEventArgs args)
+    {
+        if (_reading)
+            return;
+        _reading = true;
+
+        Task.Run(ReadFileChanges).ContinueWith(_ => _reading = false);
+    }
+
+    private async Task ReadFileChanges()
+    {
+        try
+        {
+            await using var fs = File.Open(_filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            using var reader = new StreamReader(fs);
+
             // We read new things being added from here onwards
-            while (_shouldContinue)
+            fs.Seek(_lastStreamPosition, SeekOrigin.Begin);
+            reader.DiscardBufferedData();
+
+            while (!reader.EndOfStream)
             {
                 var line = await reader.ReadLineAsync();
-                if (string.IsNullOrWhiteSpace(line))
-                {
-
-                    // 'Polling' limiter
-                    await Task.Delay(TimeSpan.FromSeconds(1));
-                    continue;
-                }
 
                 await ProcessLogChunkAsync(line, reader);
             }
+        }
+        catch (Exception e)
+        {
+            _logger.Error(e, "Failed to read the change in file {FilePath}", _filePath);
         }
     }
 
@@ -132,9 +147,8 @@ public class PlayGamesAppSessionMessageReader : IDisposable
     private async Task ProcessLogChunkAsync(string? line, StreamReader reader)
     {
         if (string.IsNullOrWhiteSpace(line))
-            return; // This should never happen as the code above ensures it. But for convinience we just add it here too.
+            return;
 
-        // This actually worked first try ;) Nice!!
         if (!line.Contains("AppSessionModule: sessions updated:"))
             return;
 
@@ -167,8 +181,7 @@ public class PlayGamesAppSessionMessageReader : IDisposable
     public void Stop()
     {
         _started = false;
-        _shouldContinue = false;
-        _fileStream?.Dispose();
+        _logFileWatcher.Dispose();
     }
 
     public void Dispose()
