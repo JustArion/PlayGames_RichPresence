@@ -54,70 +54,62 @@ internal static class Program
 
         switch (sessionInfo.AppState)
         {
-            case AppSessionState.Running:
-                await SetPresenceAsRunning(sessionInfo);
-                break;
             case AppSessionState.Starting:
-                await SetPresenceAsStarting(sessionInfo);
+                await SetPresenceFor(sessionInfo, new()
+                {
+                    Assets = new()
+                    {
+                        LargeImageText = "Starting up..."
+                    }
+                });
                 break;
-            case AppSessionState.Stopped or AppSessionState.Stopping:
-                ClearPresence(sessionInfo);
+            case AppSessionState.Running:
+                await SetPresenceFor(sessionInfo, new()
+                {
+                    Timestamps = new Timestamps(sessionInfo.StartTime.DateTime)
+                });
                 break;
+            case AppSessionState.Stopping:
+                await SetPresenceFor(sessionInfo, new()
+                {
+                    Timestamps = new Timestamps(sessionInfo.StartTime.DateTime),
+                    Assets = new()
+                    {
+                        LargeImageText = "Finishing up..."
+                    }
+                });
+                break;
+            case AppSessionState.Stopped:
+                if (_currentAppState != sessionInfo.AppState)
+                    Log.Information("Clearing Rich Presence for {GameTitle}", sessionInfo.Title);
+
+                _richPresenceHandler.RemovePresence();
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
         }
 
 
         _currentAppState = sessionInfo.AppState;
     }
 
-    private static async Task SetPresenceAsStarting(PlayGamesSessionInfo sessionInfo)
+    private static async Task SetPresenceFor(PlayGamesSessionInfo sessionInfo, RichPresence presence)
     {
         var iconUrl = await PlayGamesAppIconScraper.TryGetIconLinkAsync(sessionInfo.PackageName);
 
-        if (string.IsNullOrWhiteSpace(iconUrl))
-            _richPresenceHandler.SetPresence(new()
-            {
-                Details = sessionInfo.Title,
-            });
-        else
-            _richPresenceHandler.SetPresence(new()
-            {
-                Details = sessionInfo.Title,
-                Assets = new()
+        presence.Details ??= sessionInfo.Title;
+
+        if (!string.IsNullOrWhiteSpace(iconUrl))
+        {
+            if (presence.HasAssets())
+                presence.Assets!.LargeImageKey = iconUrl;
+            else
+                presence.Assets = new()
                 {
-                    LargeImageKey = iconUrl,
-                    LargeImageText = sessionInfo.PackageName
-                },
-            });
-    }
+                    LargeImageKey = iconUrl
+                };
+        }
 
-    private static void ClearPresence(PlayGamesSessionInfo sessionInfo)
-    {
-        if (_currentAppState != sessionInfo.AppState)
-            Log.Information("Clearing Rich Presence for {GameTitle}", sessionInfo.Title);
-
-        _richPresenceHandler.RemovePresence();
-    }
-
-    private static async Task SetPresenceAsRunning(PlayGamesSessionInfo sessionInfo)
-    {
-        var iconUrl = await PlayGamesAppIconScraper.TryGetIconLinkAsync(sessionInfo.PackageName);
-
-        if (string.IsNullOrWhiteSpace(iconUrl))
-            _richPresenceHandler.SetPresence(new()
-            {
-                Details = sessionInfo.Title,
-                Timestamps = new Timestamps(sessionInfo.StartTime.DateTime),
-            });
-        else
-            _richPresenceHandler.SetPresence(new()
-            {
-                Details = sessionInfo.Title,
-                Timestamps = new Timestamps(sessionInfo.StartTime.DateTime),
-                Assets = new()
-                {
-                    LargeImageKey = iconUrl,
-                    LargeImageText = sessionInfo.PackageName
-                },
-            });
+        _richPresenceHandler.SetPresence(presence);
     }
 }
