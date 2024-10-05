@@ -13,12 +13,16 @@ using Tray;
 [SuppressMessage("ReSharper", "NotAccessedField.Local")]
 internal static class Program
 {
+    internal static LaunchArgs Arguments { get; private set; }
+
     private static RichPresence_Tray _trayIcon = null!;
     private static RichPresenceHandler _richPresenceHandler = null!;
 
     [STAThread]
-    private static void Main()
+    private static void Main(string[] args)
     {
+        Arguments = new(args);
+
         ApplicationLogs.Initialize();
 
         SingleInstanceApplication.Ensure();

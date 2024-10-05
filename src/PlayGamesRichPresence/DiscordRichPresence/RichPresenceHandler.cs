@@ -1,4 +1,6 @@
 ﻿#define LISTEN_TO_RPCS
+using DiscordRPC.Message;
+
 namespace Dawn.PlayGames.RichPresence.DiscordRichPresence;
 
 using DiscordRPC;
@@ -11,6 +13,7 @@ public class RichPresenceHandler : IDisposable
 
     private readonly Logger _logger = (Logger)Log.ForContext<RichPresenceHandler>();
     private DiscordRpcClient _client = null!;
+    private RichPresence? _currentPresence;
 
     public RichPresenceHandler()
     {
@@ -26,27 +29,24 @@ public class RichPresenceHandler : IDisposable
             Log.Information("Setting Rich Presence for {GameTitle}", presence.Details);
 
         _client.SetPresence(presence);
+        Interlocked.Exchange(ref _currentPresence, presence);
     }
 
     public void RemovePresence()
     {
         Log.Information("Clearing Rich Presence");
         _client.SetPresence(null);
+
+        Interlocked.Exchange(ref _currentPresence, null);
     }
 
     private void InitializeUnderlyingClient()
     {
         _logger.Debug("Initializing IPC Client");
 
-        var applicationId = DEFAULT_APPLICATION_ID;
-
-        if (Environment.GetCommandLineArgs().FirstOrDefault(x => x.StartsWith("--custom-application-id=")) is { } arg)
-        {
-            var customApplicationId = arg.Split('=');
-
-            if (customApplicationId.Length > 1 && long.TryParse(customApplicationId[1], out _))
-                applicationId = customApplicationId[1];
-        }
+        var applicationId = Arguments.HasCustomApplicationId
+            ? Arguments.CustomApplicationId
+            : DEFAULT_APPLICATION_ID;
 
         _client = new DiscordRpcClient(applicationId, logger: (SerilogToDiscordLogger)_logger);
 
@@ -55,7 +55,23 @@ public class RichPresenceHandler : IDisposable
         #if LISTEN_TO_RPCS
         _client.OnRpcMessage += (_, msg) => Log.Debug("Received RPC Message: {@Message}", msg);
         #endif
+
+        _client.OnPresenceUpdate += OnPresenceUpdate;
     }
+
+    private void OnPresenceUpdate(object _, PresenceMessage args)
+    {
+        if (args.Presence == null)
+            return;
+
+        // We clear up some ghosting
+        if (_currentPresence != null)
+            return;
+
+        _logger.Verbose("Attempting to correct some rich presence ghosting");
+        _client.SetPresence(null);
+    }
+
 
     public void Dispose()
     {

@@ -33,8 +33,6 @@ internal static class ApplicationLogs
             Console.SetOut(stdout);
         }
 
-        var args = Environment.GetCommandLineArgs();
-
         try
         {
             var config = new LoggerConfiguration()
@@ -47,7 +45,7 @@ internal static class ApplicationLogs
                     applyThemeToRedirectedOutput: true, standardErrorFromLevel: LogEventLevel.Error)
                 .WriteTo.File(Path.Combine(AppContext.BaseDirectory, $"{Application.ProductName}.log"),
                 outputTemplate: LOGGING_FORMAT,
-                restrictedToMinimumLevel: args.Contains("--extended-logging")
+                restrictedToMinimumLevel: Arguments.ExtendedLogging
                     ? LogEventLevel.Verbose
                     : LogEventLevel.Warning,
                 flushToDiskInterval: TimeSpan.FromSeconds(1));
@@ -55,22 +53,12 @@ internal static class ApplicationLogs
 
 
             #if RELEASE
-            if (args.FirstOrDefault(a => a.StartsWith("--seq-url=")) is { } seqArg)
-            {
-                var customServerUrl = seqArg.Split('=');
-                if (customServerUrl.Length > 1 && Uri.TryCreate(customServerUrl[1], UriKind.Absolute, out _))
-                    config.WriteTo.Seq(customServerUrl[1],
-                        restrictedToMinimumLevel: LogEventLevel.Warning);
-                else
-                    config.WriteTo.Seq(DEFAULT_SEQ_URL,
-                        restrictedToMinimumLevel: LogEventLevel.Warning);
-            }
-            else
-            {
-                // This is personal preference, but you can set your Seq server to catch :9999 too.
-                // (Logs to nowhere if there's no Seq server listening on port 9999
-                config.WriteTo.Seq(DEFAULT_SEQ_URL, restrictedToMinimumLevel: LogEventLevel.Warning);
-            }
+            // This is personal preference, but you can set your Seq server to catch :9999 too.
+            // (Logs to nowhere if there's no Seq server listening on port 9999
+            config.WriteTo.Seq(Arguments.HasCustomSeqUrl
+                    ? Arguments.CustomSeqUrl
+                    : DEFAULT_SEQ_URL,
+                restrictedToMinimumLevel: LogEventLevel.Warning);
             #endif
 
             Log.Logger = config.CreateLogger();
