@@ -52,9 +52,10 @@ internal static class Program
     private static AppSessionState _currentAppState;
     private static async ValueTask SetPresenceFromSessionInfoAsync(PlayGamesSessionInfo sessionInfo)
     {
-
         if (_currentAppState == sessionInfo.AppState)
             return;
+        Log.Information("App State Changed from {PreviousAppState} -> {CurrentAppState}", _currentAppState, sessionInfo.AppState);
+        _currentAppState = sessionInfo.AppState;
 
         switch (sessionInfo.AppState)
         {
@@ -92,9 +93,6 @@ internal static class Program
             default:
                 throw new ArgumentOutOfRangeException();
         }
-
-
-        _currentAppState = sessionInfo.AppState;
     }
 
     private static async Task SetPresenceFor(PlayGamesSessionInfo sessionInfo, RichPresence presence)

@@ -28,18 +28,19 @@ public class RichPresenceHandler : IDisposable
         if (!ApplicationFeatures.GetFeature(x => x.RichPresenceEnabled))
             return;
 
+        if (Interlocked.Exchange(ref _currentPresence, presence) == presence)
+            return;
+
         if (presence != null)
             Log.Information("Setting Rich Presence for {GameTitle}", presence.Details);
 
         _client.SetPresence(presence);
-        Interlocked.Exchange(ref _currentPresence, presence);
     }
 
     public void RemovePresence()
     {
-        _client.ClearPresence();
-
         Interlocked.Exchange(ref _currentPresence, null);
+        _client.ClearPresence();
     }
 
     private void InitializeUnderlyingClient()
