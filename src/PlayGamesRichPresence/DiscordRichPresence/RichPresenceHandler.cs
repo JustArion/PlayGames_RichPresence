@@ -25,6 +25,9 @@ public class RichPresenceHandler : IDisposable
 
     public void SetPresence(RichPresence? presence)
     {
+        if (!ApplicationFeatures.GetFeature(x => x.RichPresenceEnabled))
+            return;
+
         if (presence != null)
             Log.Information("Setting Rich Presence for {GameTitle}", presence.Details);
 
