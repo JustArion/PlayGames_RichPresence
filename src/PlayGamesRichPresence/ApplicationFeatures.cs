@@ -5,16 +5,19 @@ using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using global::Serilog;
 
+/// <summary>
+/// Application features differs from LaunchArgs as LaunchArgs is immutable
+/// </summary>
 internal class ApplicationFeatures
 {
     private ApplicationFeatures() { }
     private static readonly ApplicationFeatures Instance = new();
-    
+
     public static void SyncFeature<T>(Expression<Func<ApplicationFeatures, T>> expression, T value)
     {
-        if (expression.Body is not MemberExpression memberExpression) 
+        if (expression.Body is not MemberExpression memberExpression)
             return;
-        
+
         var propertyInfo = (System.Reflection.PropertyInfo)memberExpression.Member;
 
         var fieldName = ConvertToFieldName(propertyInfo.Name);
@@ -22,7 +25,7 @@ internal class ApplicationFeatures
 
         if (field == null)
             throw new UnreachableException($"Developer mistake, this should not happen, PropertyName: {propertyInfo.Name}, Expected Field was not found: {fieldName}");
-        
+
         field.SetValue(Instance, value);
         Log.Verbose("FeatureSync: {Property} = {Value}", propertyInfo.Name, value);
     }
@@ -34,10 +37,10 @@ internal class ApplicationFeatures
             throw new ArgumentException("Invalid expression", nameof(expression));
 
         var propertyInfo = (System.Reflection.PropertyInfo)memberExpression.Member;
-        
+
         return ((T)propertyInfo.GetValue(Instance)!);
     }
-    
+
     public static void SetFeature<T>(Expression<Func<ApplicationFeatures, T>> expression, T value)
     {
         if (expression.Body is not MemberExpression memberExpression)
@@ -54,7 +57,7 @@ internal class ApplicationFeatures
         Log.Verbose("FeatureChange: [{CallerName}] {Previous} -> {Current}", callerName, featureBackingField, newValue);
         featureBackingField = newValue;
     }
-    
+
     private bool _richPresenceEnabled;
 
     public bool RichPresenceEnabled
