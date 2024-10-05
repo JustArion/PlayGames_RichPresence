@@ -37,8 +37,7 @@ public class RichPresenceHandler : IDisposable
 
     public void RemovePresence()
     {
-        Log.Information("Clearing Rich Presence");
-        _client.SetPresence(null);
+        _client.ClearPresence();
 
         Interlocked.Exchange(ref _currentPresence, null);
     }
@@ -72,7 +71,7 @@ public class RichPresenceHandler : IDisposable
             return;
 
         _logger.Verbose("Attempting to correct some rich presence ghosting");
-        _client.SetPresence(null);
+        _client.ClearPresence();
     }
 
 
