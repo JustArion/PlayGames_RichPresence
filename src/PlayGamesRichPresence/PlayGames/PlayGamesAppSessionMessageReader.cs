@@ -63,7 +63,9 @@ public class PlayGamesAppSessionMessageReader : IDisposable
             await CatchUpAsync(reader);
         _lastStreamPosition = fs.Position;
 
-        Log.Debug("Stream position is currently at {Position}", fs.Position);
+        Log.Debug("CatchUp: Stream position is currently at {Position}", fs.Position);
+        Log.Debug("CatchUp: Read {Lines} lines", _catchUpLinesRead);
+        Log.Debug("CatchUp: File Size is currently {FileSizeMb} MB", Math.Round(fs.Length / Math.Pow(1024, 2), 0));
     }
 
     private void LogFileWatcherOnError(object sender, ErrorEventArgs e) => _logger.Error(e.GetException(), "File watcher error");
@@ -110,6 +112,17 @@ public class PlayGamesAppSessionMessageReader : IDisposable
         }
     }
 
+    private uint _catchUpLinesRead;
+
+    private async Task<string?> ReadLineAsync(StreamReader reader)
+    {
+        var retVal = await reader.ReadLineAsync();
+
+        if (retVal != null)
+            Interlocked.Increment(ref _catchUpLinesRead);
+
+        return retVal;
+    }
     /// <summary>
     /// The method ensures that a Rich Presence will be enabled if a game is running before this program started.
     /// </summary>
@@ -123,7 +136,7 @@ public class PlayGamesAppSessionMessageReader : IDisposable
 
         while (!reader.EndOfStream)
         {
-            var line = await reader.ReadLineAsync();
+            var line = await ReadLineAsync(reader);
             if (string.IsNullOrWhiteSpace(line))
                 continue;
 
@@ -132,12 +145,12 @@ public class PlayGamesAppSessionMessageReader : IDisposable
 
             var sb = new StringBuilder();
             sb.AppendLine("{");
-            line = await reader.ReadLineAsync();
+            line = await ReadLineAsync(reader);
 
             while (!string.IsNullOrWhiteSpace(line) && line != "}")
             {
                 sb.AppendLine(line);
-                line = await reader.ReadLineAsync();
+                line = await ReadLineAsync(reader);
             }
 
             sb.AppendLine("}");
