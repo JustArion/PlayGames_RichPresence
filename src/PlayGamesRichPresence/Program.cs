@@ -74,19 +74,8 @@ internal static class Program
                     Timestamps = new Timestamps(sessionInfo.StartTime.DateTime)
                 });
                 break;
-            case AppSessionState.Stopping:
-                await SetPresenceFor(sessionInfo, new()
-                {
-                    Timestamps = new Timestamps(sessionInfo.StartTime.DateTime),
-                    Assets = new()
-                    {
-                        LargeImageText = "Finishing up..."
-                    }
-                });
-                break;
-            case AppSessionState.Stopped:
-                if (_currentAppState != sessionInfo.AppState)
-                    Log.Information("Clearing Rich Presence for {GameTitle}", sessionInfo.Title);
+            case AppSessionState.Stopping or AppSessionState.Stopped:
+                Log.Information("Clearing Rich Presence for {GameTitle}", sessionInfo.Title);
 
                 _richPresenceHandler.RemovePresence();
                 break;
