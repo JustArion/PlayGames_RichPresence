@@ -42,13 +42,19 @@ internal static class ApplicationLogs
                 .Enrich.FromLogContext()
                 .WriteTo.Console(outputTemplate: LOGGING_FORMAT, theme: BlizzardTheme.GetTheme,
                     restrictedToMinimumLevel: LogEventLevel.Verbose,
-                    applyThemeToRedirectedOutput: true, standardErrorFromLevel: LogEventLevel.Error)
-                .WriteTo.File(Path.Combine(AppContext.BaseDirectory, $"{Application.ProductName}.log"),
-                outputTemplate: LOGGING_FORMAT,
-                restrictedToMinimumLevel: Arguments.ExtendedLogging
-                    ? LogEventLevel.Verbose
-                    : LogEventLevel.Warning,
-                flushToDiskInterval: TimeSpan.FromSeconds(1));
+                    applyThemeToRedirectedOutput: true, standardErrorFromLevel: LogEventLevel.Error);
+
+                if (!Arguments.NoFileLogging)
+                    config.WriteTo.File(Path.Combine(AppContext.BaseDirectory, $"{Application.ProductName}.log"),
+                    outputTemplate: LOGGING_FORMAT,
+                    restrictedToMinimumLevel: Arguments.ExtendedLogging
+                        ? LogEventLevel.Verbose
+                        : LogEventLevel.Warning,
+                    buffered: true,
+                    retainedFileCountLimit: 1,
+                    rollOnFileSizeLimit: true,
+                    fileSizeLimitBytes: (long)Math.Pow(1024, 2) * 20,
+                    flushToDiskInterval: TimeSpan.FromSeconds(1));
 
 
 

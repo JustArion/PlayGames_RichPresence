@@ -9,6 +9,7 @@ public struct LaunchArgs
         CommandLine = string.Join(" ", args);
         RichPresenceDisabledOnStart = args.Contains(RP_DISABLED_ON_START);
         ExtendedLogging  = args.Contains("--extended-logging");
+        NoFileLogging = args.Contains("--no-file-logging");
 
         CustomApplicationId = ExtractArgumentValue("--custom-application-id=", args);
         HasCustomApplicationId = !string.IsNullOrWhiteSpace(CustomApplicationId);
@@ -22,7 +23,7 @@ public struct LaunchArgs
 
     // Args
     public bool RichPresenceDisabledOnStart { get; }
-
+    public bool NoFileLogging { get; }
     public bool ExtendedLogging { get; }
 
     public bool HasCustomApplicationId { get; }

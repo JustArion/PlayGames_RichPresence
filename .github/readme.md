@@ -33,6 +33,7 @@
 | --seq-url=               | http://localhost:9999 | Seq Logging Platform                                                  |
 | --extended-logging       |         `N/A`         | File Log Level: Verbose (From Warning)                                |
 | --rp-disabled-on-start   |         `N/A`         | Rich Presence is Disabled for *Play Games*                            |
+| --no-file-logging        |         `N/A`         | Disables logging to the file (Located in the current directory)       |
 
 **Launch Args Example**
 
