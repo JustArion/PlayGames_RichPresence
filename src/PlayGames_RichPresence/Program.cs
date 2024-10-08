@@ -17,6 +17,8 @@ internal static class Program
 
     private static RichPresence_Tray _trayIcon = null!;
     private static RichPresenceHandler _richPresenceHandler = null!;
+    private const string FILE_PATH = @"Google\Play Games\Logs\Service.log";
+    private static readonly string _filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), FILE_PATH);
 
     [STAThread]
     private static void Main(string[] args)
@@ -28,9 +30,9 @@ internal static class Program
         SingleInstanceApplication.Ensure();
 
         _richPresenceHandler = new();
-        var reader = new PlayGamesAppSessionMessageReader();
+        var reader = new PlayGamesAppSessionMessageReader(_filePath);
 
-        _trayIcon = new();
+        _trayIcon = new(_filePath);
         _trayIcon.RichPresenceEnabledChanged += OnRichPresenceEnabledChanged;
 
         reader.StartAsync();

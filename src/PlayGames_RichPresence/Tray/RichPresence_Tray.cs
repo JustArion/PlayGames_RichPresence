@@ -1,4 +1,6 @@
-﻿namespace Dawn.PlayGames.RichPresence.Tray;
+﻿using System.Diagnostics;
+
+namespace Dawn.PlayGames.RichPresence.Tray;
 
 using System.Linq.Expressions;
 using global::Serilog;
@@ -8,8 +10,10 @@ public class RichPresence_Tray
 {
     internal NotifyIcon Tray { get; private set; }
     private readonly ILogger _logger = Log.ForContext<RichPresence_Tray>();
-    public RichPresence_Tray()
+    private readonly string _serviceLogFilePath;
+    public RichPresence_Tray(string serviceLogFilePath)
     {
+        _serviceLogFilePath = serviceLogFilePath;
         Tray = new();
 
         Tray.Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
@@ -24,11 +28,34 @@ public class RichPresence_Tray
         AddStripItems(Tray.ContextMenuStrip.Items);
     }
 
+    private static void StartProcess(Action start)
+    {
+        try
+        {
+            start();
+        }
+        catch (Exception e)
+        {
+            Log.Error(e, "Failed to start process");
+        }
+
+    }
+
     private void AddStripItems(ToolStripItemCollection items)
     {
         items.AddRange(Header());
         try
         {
+            if (Arguments.ExtendedLogging)
+            {
+                _logger.Information("Adding extended logging items");
+                items.Add("Open App Directory", null, (_, _) => StartProcess(()=> Process.Start("explorer", $"/select,\"{Application.ExecutablePath}\"")));
+                items.Add("Open Log File", null, (_, _) =>
+                {
+                    if (File.Exists(_serviceLogFilePath))
+                        StartProcess(()=> Process.Start("explorer", _serviceLogFilePath));
+                });
+            }
             items.Add(Enabled());
             items.Add(RunOnStartup());
             items.Add(HideTray());
