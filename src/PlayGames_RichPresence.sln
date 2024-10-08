@@ -4,7 +4,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayGames_RichPresence", "P
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RiotTrayContextTheme", "RiotTrayContextTheme\RiotTrayContextTheme.csproj", "{2236701B-915E-4E26-98CC-46B4903E4719}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayGames_RichPresence.Tests.Unit", "PlayGames_RichPresence.Tests.Unit\PlayGames_RichPresence.Tests.Unit.csproj", "{C126C842-3485-43BB-A87A-DEA573DA7866}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayGames_RichPresence.Tests", "PlayGames_RichPresence.Tests\PlayGames_RichPresence.Tests.csproj", "{C126C842-3485-43BB-A87A-DEA573DA7866}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
