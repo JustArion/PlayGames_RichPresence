@@ -1,6 +1,15 @@
 > [!NOTE]
 > Additional options available in the Tray Icon
 
+## Table of Contents
+- [Requirements](#requirements)
+- [Tray Options](#tray-options)
+- [Auto-Startup](#auto-startup)
+- [Custom Launch Args](#custom-launch-args)
+- [Previews](#previews)
+- [Building from Source](#building-from-source)
+- [Permissions](#permissions)
+
 ### Requirements
 [.NET 8.0.X Desktop Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) (x64)
 
@@ -33,6 +42,11 @@ Enabling `Run on Startup` clones the current launch arguments and runs it as tha
 `& '.\PlayGames RichPresence.exe' --extended-logging --seq-url=http://localhost:9999`
 
 ---
+### Previews
+![context-menu-preview](images/TrayContextMenuPreview.png)
+![rich-presence-preview](images/RichPresencePreview.png)
+---
+
 ## For advanced users
 
 ### Building from Source
