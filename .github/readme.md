@@ -2,29 +2,22 @@
 > Additional options available in the Tray Icon
 
 ### Requirements
-[.NET 8.0.X Desktop Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
+[.NET 8.0.X Desktop Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) (x64)
 
-### Permissions
-- `IO`
-  - Connects to named pipe (`discord-ipc-{0}`)
-    - Handled by Nuget package [DiscordRichPresence](https://www.nuget.org/packages/DiscordRichPresence)
-  - `Write Access`
-    - Writes a single Log File to the `PlayGames RichPresence.exe` directory
-      - `PlayGames RichPresence.log`
-    - _Can_ create a single registry key (`\HKCU\Software\Microsoft\Windows\CurrentVersion\Run\PlayGames RichPresence`) 
-      - Default is off, configurable by the user
-  - `Read Access`
-    - Reads the file (`AppData/Local/Google/Play Games/Service.log`) if it exists
-      - See [Technical-Document](technical-1.md)
-    - Reads directory changes for a single directory (`AppData/Local/Google/Play Games/`)
-      - The "File System Watcher" watches for changes on `Service.log` only
-    - Reads a single registry key (`\HKCU\Software\Microsoft\Windows\CurrentVersion\Run\PlayGames RichPresence`) 
-      - Run on Startup
-- `Network`
-  - `Upload Access`
-    - Sends logging data (`http://localhost:9999`)
-      - Configurable by the user / command line, Handled by Nuget package [Serilog.Sinks.Seq](https://www.nuget.org/packages/Serilog.Sinks.Seq) & external application ([Seq](https://datalust.co/seq))
+---
+### Auto-Startup
 
+Enabling `Run on Startup` clones the current launch arguments and runs it as that on startup.
+
+---
+### Tray Options
+
+- Enabled (Checkbox)
+- Run on Startup (Checkbox)
+- Hide Tray (Button, Hides the Tray Icon until next start)
+- Exit (Closes the program)
+
+---
 ### Custom Launch Args
 
 | Argument                 |     Default Value     | Description                                                           |
@@ -39,13 +32,36 @@
 
 `& '.\PlayGames RichPresence.exe' --extended-logging --seq-url=http://localhost:9999`
 
-### Tray Options
+---
+## For advanced users
 
-- Enabled (Checkbox)
-- Run on Startup (Checkbox)
-- Hide Tray (Button, Hides the Tray Icon until next start)
-- Exit (Closes the program)
+### Building from Source
 
-### Startup
+#### Pre-Build Requirements
 
-Enabling `Run on Startup` clones the current launch arguments and runs it as that on startup.
+- [.NET SDK 8.0.X](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) (x64)<br>
+- [Git](https://git-scm.com/downloads)
+
+---
+#### Build Steps
+
+**Manual**
+```ps1
+git clone https://github.com/JustArion/PlayGames_RichPresence && cd "PlayGames_RichPresence"
+dotnet publish .\src\PlayGamesRichPresence\ --runtime win-x64 --output ./bin/
+```
+
+**Makefile**
+```ps1
+git clone https://github.com/JustArion/PlayGames_RichPresence && cd "PlayGames_RichPresence"
+make build
+```
+
+After running these commands the output should be in the `bin` folder in the root directory of the repo.
+
+### Permissions
+
+A comprehensive list of permissions the application needs / could need can be found [here](permissions.md)
+
+---
+
