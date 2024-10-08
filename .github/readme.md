@@ -5,17 +5,17 @@
 [.NET 8.0.X Desktop Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) (x64)
 
 ---
-### Auto-Startup
-
-Enabling `Run on Startup` clones the current launch arguments and runs it as that on startup.
-
----
 ### Tray Options
 
 - Enabled (Checkbox)
 - Run on Startup (Checkbox)
 - Hide Tray (Button, Hides the Tray Icon until next start)
 - Exit (Closes the program)
+
+---
+### Auto-Startup
+
+Enabling `Run on Startup` clones the current launch arguments and runs it as that on startup.
 
 ---
 ### Custom Launch Args
