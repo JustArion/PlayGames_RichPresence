@@ -1,5 +1,6 @@
 ﻿// #define LOG_APP_SESSION_MESSAGES
 using Dawn.PlayGames.RichPresence.Domain;
+using Dawn.PlayGames.RichPresence.PlayGames.FileOperations;
 using Dawn.Serilog.CustomEnrichers;
 
 namespace Dawn.PlayGames.RichPresence.PlayGames;
@@ -8,15 +9,13 @@ using System.Text;
 using global::Serilog;
 using FileAccess = System.IO.FileAccess;
 
-public class PlayGamesAppSessionMessageReader : IDisposable
+public class PlayGamesAppSessionMessageReader(string filePath) : IDisposable
 {
     private readonly ILogger _logger = Log.ForContext<PlayGamesAppSessionMessageReader>();
-    private readonly string _filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), FILE_PATH);
-    private const string FILE_PATH = @"Google\Play Games\Logs\Service.log";
 
     private bool _started;
     private long _lastStreamPosition;
-    private readonly FileSystemWatcher _logFileWatcher = new();
+    private readonly PlayGamesLogWatcher _logWatcher = new(filePath);
     public event EventHandler<PlayGamesSessionInfo>? OnSessionInfoReceived;
 
     public void StartAsync()
@@ -27,75 +26,84 @@ public class PlayGamesAppSessionMessageReader : IDisposable
 
         Task.Factory.StartNew(InitiateWatchOperation, TaskCreationOptions.LongRunning);
     }
+    internal FileLock AquireFileLock() => FileLock.Aquire(filePath);
 
     private async Task InitiateWatchOperation()
     {
         Log.Verbose("Doing fresh read-operation pass");
 
         // Wait till the file exists
-        if (!File.Exists(_filePath))
+        if (!File.Exists(filePath))
         {
-            _logger.Debug("File not found: {FilePath}", FILE_PATH);
+            _logger.Debug("File not found: Service.log");
             await Task.Delay(TimeSpan.FromSeconds(5));
         }
 
-        _logFileWatcher.Path = Path.GetDirectoryName(_filePath)!;
-        _logFileWatcher.Filter = Path.GetFileName(_filePath);
-        _logFileWatcher.NotifyFilter = NotifyFilters.LastWrite;
-        _logFileWatcher.Changed += LogFileWatcherOnFileChanged;
-        _logFileWatcher.Error += LogFileWatcherOnError;
-
-
         _reading = true;
-        await using var fs = File.Open(_filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-        using var reader = new StreamReader(fs);
 
-        await CatchUpSync(reader, fs);
+        await using (var fileLock = AquireFileLock())
+            await CatchUpAsync(fileLock);
 
         _reading = false;
-        _logFileWatcher.EnableRaisingEvents = true;
+        _logWatcher.Error += LogFileWatcherOnError;
+        _logWatcher.FileChanged += LogFileWatcherOnFileChanged;
+        _logWatcher.Initialize();
     }
 
-    private async Task CatchUpSync(StreamReader reader, FileStream fs)
+    private async Task CatchUpAsync(FileLock fileLock)
     {
+        var reader = fileLock.Reader;
+        IReadOnlyList<PlayGamesSessionInfo> sessions;
         // We read the old entries (To check if there's a game currently running)
         using (Warn.OnLongerThan(TimeSpan.FromSeconds(2), "Catch-Up took unusually long"))
-            await CatchUpAsync(reader);
-        _lastStreamPosition = fs.Position;
+            sessions = await GetAllSessionInfos(fileLock);
+        _lastStreamPosition = reader.BaseStream.Position;
 
-        Log.Debug("CatchUp: Stream position is currently at {Position}", fs.Position);
-        Log.Debug("CatchUp: Read {Lines} lines", _catchUpLinesRead);
-        Log.Debug("CatchUp: File Size is currently {FileSizeMb} MB", Math.Round(fs.Length / Math.Pow(1024, 2), 0));
+        var last = sessions.Count > 0
+            ? sessions[^1]
+            : null;
+
+        if (last is { AppState: AppSessionState.Running })
+        {
+            Log.Verbose("Caught up (Processed {EventsProcessed} events), emitting {SessionInfo}", sessions.Count, last);
+            OnSessionInfoReceived?.Invoke(this, last);
+        }
+        else
+            Log.Verbose("Caught up, no games are currently running (Processed {EventsProcessed} events)", sessions.Count);
+
+        Log.Debug("CatchUp: Stream position is currently at {Position}", reader.BaseStream.Position);
+        Log.Debug("CatchUp: Read {Lines} lines", _initialLinesRead);
+        Log.Debug("CatchUp: File Size is currently {FileSizeMb} MB", Math.Round(reader.BaseStream.Length / Math.Pow(1024, 2), 0));
     }
 
-    private void LogFileWatcherOnError(object sender, ErrorEventArgs e) => _logger.Error(e.GetException(), "File watcher error");
+    private void LogFileWatcherOnError(object? _, ErrorEventArgs e) => _logger.Error(e.GetException(), "File watcher error");
 
     private bool _reading;
-    private void LogFileWatcherOnFileChanged(object sender, FileSystemEventArgs args)
+    private void LogFileWatcherOnFileChanged(object? _, FileSystemEventArgs args)
     {
         if (_reading)
             return;
         _reading = true;
 
-        Task.Run(ReadFileChanges).ContinueWith(_ => _reading = false);
+        Task.Run(ProcessFileChanges).ContinueWith(_ => _reading = false);
     }
 
-    private async Task ReadFileChanges()
+    private async Task ProcessFileChanges()
     {
         try
         {
-            await using var fs = File.Open(_filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-            using var reader = new StreamReader(fs);
+            await using var fileLock = FileLock.Aquire(filePath);
 
-            if (_lastStreamPosition > fs.Length)
+            var reader = fileLock.Reader;
+            if (_lastStreamPosition > reader.BaseStream.Length)
             {
                 Log.Verbose("File was truncated, resetting stream position");
-                await CatchUpSync(reader, fs);
+                await CatchUpAsync(fileLock);
                 return;
             }
 
             // We read new things being added from here onwards
-            fs.Seek(_lastStreamPosition, SeekOrigin.Begin);
+            reader.BaseStream.Seek(_lastStreamPosition, SeekOrigin.Begin);
             reader.DiscardBufferedData();
 
             while (!reader.EndOfStream)
@@ -108,31 +116,31 @@ public class PlayGamesAppSessionMessageReader : IDisposable
         }
         catch (Exception e)
         {
-            _logger.Error(e, "Failed to read the change in file {FilePath}", _filePath);
+            _logger.Error(e, "Failed to read the change in file {FilePath}", filePath);
         }
     }
 
-    private uint _catchUpLinesRead;
+    private uint _initialLinesRead;
 
     private async Task<string?> ReadLineAsync(StreamReader reader)
     {
         var retVal = await reader.ReadLineAsync();
 
         if (retVal != null)
-            Interlocked.Increment(ref _catchUpLinesRead);
+            Interlocked.Increment(ref _initialLinesRead);
 
         return retVal;
     }
     /// <summary>
     /// The method ensures that a Rich Presence will be enabled if a game is running before this program started.
     /// </summary>
-    /// <param name="reader"></param>
-    private async Task CatchUpAsync(StreamReader reader)
+    internal async Task<IReadOnlyList<PlayGamesSessionInfo>> GetAllSessionInfos(FileLock fileLock)
     {
+        var reader = fileLock.Reader;
         Log.Verbose("Catching up...");
-        var events = 0;
-        PlayGamesSessionInfo? sessionInfo = null;
+        var sessions = new List<PlayGamesSessionInfo>(20);
         reader.BaseStream.Seek(0, SeekOrigin.Begin);
+        _initialLinesRead = 0;
 
         while (!reader.EndOfStream)
         {
@@ -156,20 +164,15 @@ public class PlayGamesAppSessionMessageReader : IDisposable
             sb.AppendLine("}");
             var appSessionMessage = sb.ToString();
 
-            sessionInfo = AppSessionInfoBuilder.Build(appSessionMessage);
-            events++;
+            var sessionInfo = AppSessionInfoBuilder.Build(appSessionMessage);
 
-            if (sessionInfo?.AppState != AppSessionState.Running)
-                sessionInfo = null;
+            if (sessionInfo == null)
+                continue;
+
+            sessions.Add(sessionInfo);
         }
 
-        if (sessionInfo == null)
-            Log.Verbose("Caught up, no games are currently running (Processed {EventsProcessed} events)", events);
-        else
-        {
-            Log.Verbose("Caught up (Processed {EventsProcessed} events), emitting {SessionInfo}", events, sessionInfo);
-            OnSessionInfoReceived?.Invoke(this, sessionInfo);
-        }
+        return sessions;
     }
 
     private async Task ProcessLogChunkAsync(string? line, StreamReader reader)
@@ -209,7 +212,7 @@ public class PlayGamesAppSessionMessageReader : IDisposable
     public void Stop()
     {
         _started = false;
-        _logFileWatcher.Dispose();
+        _logWatcher.Dispose();
     }
 
     public void Dispose()
