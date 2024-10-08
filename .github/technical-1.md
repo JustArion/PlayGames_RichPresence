@@ -4,11 +4,11 @@ To read the info for the current game we need to read the `AppData/Local/Google/
 The service log contains the necessary info to provide a rich-presence for Discord.
 It contains:
 - Startup Timestamp
-- Package Name
+- Package Name (For Icon / Art)
 - Game Name
 
 We can do some processing on our side to get an image via the `PackageName`<br>
-To do this we simply do a `GET` request to `https://play.google.com/store/apps/details?id=<PackageName>` and then extract the `<meta property="og:image" content="PACKAGE_IMAGE_LINK">` tag from the header
+To do this we simply do a `GET` request to `https://play.google.com/store/apps/details?id=<PackageName>` and then extract the `<meta property="og:image" content="PACKAGE_IMAGE_LINK">` tag from the head tag
 
 We can differentiate the info from the log file via the `state` property in the log. There's 4 states that I know of but the format is a gRPC Message `.ToString()`-ed. If it were JSON it would have been easier.
 
