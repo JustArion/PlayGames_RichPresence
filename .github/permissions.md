@@ -15,5 +15,5 @@
             - Run on Startup
 - `Network`
     - `Upload Access`
-        - Sends logging data (`http://localhost:9999`)
+        - Sends telemetry (`http://localhost:9999`)
             - Configurable by the user / command line, Handled by Nuget package [Serilog.Sinks.Seq](https://www.nuget.org/packages/Serilog.Sinks.Seq) & external application ([Seq](https://datalust.co/seq))
