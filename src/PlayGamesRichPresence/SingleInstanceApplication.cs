@@ -59,6 +59,6 @@ public static class SingleInstanceApplication
         }
 
         Log.Warning("Another instance of the application is already running '{ProcessName}' ({OtherProcessId})", otherProcess.ProcessName + ".exe", otherProcess.Id);
-        Environment.Exit(0);
+        Environment.Exit(1);
     }
 }
