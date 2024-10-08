@@ -41,7 +41,6 @@ internal static class ApplicationLogs
                 .Enrich.WithProcessName()
                 .Enrich.FromLogContext()
                 .WriteTo.Console(outputTemplate: LOGGING_FORMAT, theme: BlizzardTheme.GetTheme,
-                    restrictedToMinimumLevel: LogEventLevel.Verbose,
                     applyThemeToRedirectedOutput: true, standardErrorFromLevel: LogEventLevel.Error);
 
                 if (!Arguments.NoFileLogging)
