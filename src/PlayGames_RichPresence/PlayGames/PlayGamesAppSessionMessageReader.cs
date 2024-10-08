@@ -1,4 +1,4 @@
-﻿#define LOG_APP_SESSION_MESSAGES
+﻿// #define LOG_APP_SESSION_MESSAGES
 using Dawn.PlayGames.RichPresence.Domain;
 using Dawn.Serilog.CustomEnrichers;
 
