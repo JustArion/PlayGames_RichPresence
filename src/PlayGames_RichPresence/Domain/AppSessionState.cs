@@ -2,9 +2,9 @@
 
 public enum AppSessionState
 {
+    None,
     Stopping,
     Stopped,
     Starting,
     Running,
-    
 }
