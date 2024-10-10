@@ -84,6 +84,12 @@ internal static class Program
         if (_currentAppState == sessionInfo.AppState)
             return;
 
+        if (Process.GetProcessesByName("crosvm").Length == 0)
+        {
+            Log.Debug("Emulator is not running, likely a log-artifact");
+            return;
+        }
+
         // This is a bit of a loaded if statement. Let me break it down a bit
         // If the state went from Starting -> Started we don't do anything
         // If the state went from anything -> Starting / Started we subscribe to the app exit
