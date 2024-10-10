@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Dawn.PlayGames.RichPresence.Logging;
 using Dawn.PlayGames.RichPresence.PlayGames;
 
@@ -49,13 +50,57 @@ internal static class Program
         _richPresenceHandler.RemovePresence();
     }
 
-    private static void SessionInfoReceived(object? sender, PlayGamesSessionInfo sessionInfo) => Task.Run(()=> SetPresenceFromSessionInfoAsync(sessionInfo));
+    private static CancellationTokenSource _cts = new();
+    private static void SessionInfoReceived(object? sender, PlayGamesSessionInfo sessionInfo) =>
+        Task.Run(() => SetPresenceFromSessionInfoAsync(sessionInfo));
+
+    private static void SubscribeToAppExit(string processName, EventHandler onExit, CancellationToken ctsToken)
+    {
+        var process = Process.GetProcessesByName(processName).OrderBy(x => x.StartTime).FirstOrDefault();
+        if (process is null)
+        {
+            Log.Warning("Process {ProcessName} not found", processName);
+            return;
+        }
+
+        try
+        {
+            process.EnableRaisingEvents = true;
+            process.Exited += onExit;
+            ctsToken.Register(() => process.Exited -= onExit);
+
+            Log.Information("Subscribed to app exit for {ProcessName}", $"{processName}.exe");
+        }
+        catch (AccessViolationException e)
+        {
+            Log.Error(e, "Failed to subscribe to app exit");
+        }
+
+    }
 
     private static AppSessionState _currentAppState;
     private static async ValueTask SetPresenceFromSessionInfoAsync(PlayGamesSessionInfo sessionInfo)
     {
         if (_currentAppState == sessionInfo.AppState)
             return;
+
+        // This is a bit of a loaded if statement. Let me break it down a bit
+        // If the state went from Starting -> Started we don't do anything
+        // If the state went from anything -> Starting / Started we subscribe to the app exit
+        // This should prevent a double subscribe if weird app orders start appearing (Running -> Starting)
+        if (_currentAppState is not (AppSessionState.Starting or AppSessionState.Running) && sessionInfo.AppState is AppSessionState.Starting or AppSessionState.Running)
+        {
+            _cts = new ();
+            SubscribeToAppExit("crosvm", (_, _) =>
+            {
+                Log.Information("crosvm.exe has exited");
+                _currentAppState = AppSessionState.Stopped;
+                ClearPresenceFor(sessionInfo);
+            }, _cts.Token);
+        }
+
+
+
         Log.Information("App State Changed from {PreviousAppState} -> {CurrentAppState}", _currentAppState, sessionInfo.AppState);
         _currentAppState = sessionInfo.AppState;
 
@@ -77,13 +122,19 @@ internal static class Program
                 });
                 break;
             case AppSessionState.Stopping or AppSessionState.Stopped:
-                Log.Information("Clearing Rich Presence for {GameTitle}", sessionInfo.Title);
-
-                _richPresenceHandler.RemovePresence();
+                await _cts.CancelAsync();
+                ClearPresenceFor(sessionInfo);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
         }
+    }
+
+    private static void ClearPresenceFor(PlayGamesSessionInfo sessionInfo)
+    {
+        Log.Information("Clearing Rich Presence for {GameTitle}", sessionInfo.Title);
+
+        _richPresenceHandler.RemovePresence();
     }
 
     private static async Task SetPresenceFor(PlayGamesSessionInfo sessionInfo, RichPresence presence)

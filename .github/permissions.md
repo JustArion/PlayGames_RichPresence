@@ -17,3 +17,7 @@
     - `Upload Access`
         - Sends telemetry (`http://localhost:9999`)
             - Configurable by the user / command line, Handled by Nuget package [Serilog.Sinks.Seq](https://www.nuget.org/packages/Serilog.Sinks.Seq) & external application ([Seq](https://datalust.co/seq))
+- `Process`
+    - `Read Access`
+      - Queries for common information from multiple processes with the same name (`crosvm.exe`)
+        - Clears Rich Presence when process is forcibly killed
