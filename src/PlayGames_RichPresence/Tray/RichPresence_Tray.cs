@@ -131,7 +131,7 @@ public class RichPresence_Tray
             if (startup.Checked)
                 Startup.RemoveStartup(Application.ProductName!);
             else
-                Startup.StartWithWindows(Application.ProductName!, Arguments.CommandLine);
+                Startup.StartWithWindows(Application.ProductName!, $"\"{Environment.ProcessPath}\" {Arguments.CommandLine}");
 
             startup.Checked = !startup.Checked;
         };
