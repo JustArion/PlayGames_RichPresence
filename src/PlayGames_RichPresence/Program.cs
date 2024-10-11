@@ -100,7 +100,9 @@ internal static class Program
             SubscribeToAppExit("crosvm", (_, _) =>
             {
                 Log.Information("crosvm.exe has exited");
+                var previousAppState = _currentAppState;
                 _currentAppState = AppSessionState.Stopped;
+                Log.Information("App State Changed from {PreviousAppState} -> {CurrentAppState}", previousAppState, _currentAppState);
                 ClearPresenceFor(sessionInfo);
             }, _cts.Token);
         }
