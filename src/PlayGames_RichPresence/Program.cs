@@ -18,6 +18,7 @@ internal static class Program
 
     private static RichPresence_Tray _trayIcon = null!;
     private static RichPresenceHandler _richPresenceHandler = null!;
+    private static ProcessBinding? _processBinding;
     private const string FILE_PATH = @"Google\Play Games\Logs\Service.log";
     private static readonly string _filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), FILE_PATH);
 
@@ -39,7 +40,11 @@ internal static class Program
         reader.StartAsync();
         reader.OnSessionInfoReceived += SessionInfoReceived;
 
+        if (Arguments.HasProcessBinding)
+            _processBinding = new ProcessBinding(Arguments.ProcessBinding);
+
         Application.Run();
+        _processBinding?.Dispose();
     }
 
     private static void OnRichPresenceEnabledChanged(object? sender, bool active)
