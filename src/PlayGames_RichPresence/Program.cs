@@ -56,8 +56,8 @@ internal static class Program
     }
 
     private static CancellationTokenSource _cts = new();
-    private static void SessionInfoReceived(object? sender, PlayGamesSessionInfo sessionInfo) =>
-        Task.Run(() => SetPresenceFromSessionInfoAsync(sessionInfo));
+
+    private static void SessionInfoReceived(object? sender, PlayGamesSessionInfo sessionInfo) => Task.Run(() => SetPresenceFromSessionInfoAsync(sessionInfo));
 
     private static void SubscribeToAppExit(string processName, EventHandler onExit, CancellationToken ctsToken)
     {
