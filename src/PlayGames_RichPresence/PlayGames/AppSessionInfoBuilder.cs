@@ -14,6 +14,15 @@ internal static partial class AppSessionInfoBuilder
         if (!packageNameMatch.Success)
             return null;
 
+        var packageName = packageNameMatch.Groups[1].Value.Replace("\r", string.Empty);
+
+        // We skip system level applications such as com.android.settings (The settings application for the emulator)
+        if (packageName.StartsWith("com.android"))
+        {
+            Log.Verbose("Skipping system level application. {PackageName}", packageName);
+            return null;
+        }
+
         var titleMatch = TitleRegex().Match(info);
         if (!titleMatch.Success)
             return null;
@@ -42,7 +51,6 @@ internal static partial class AppSessionInfoBuilder
             return null;
         }
 
-        var packageName = packageNameMatch.Groups[1].Value.Replace("\r", string.Empty);
         var title = titleMatch.Groups[1].Value.Replace("\r", string.Empty);
 
         return new PlayGamesSessionInfo(packageName, startedTimestamp, title, appState);
