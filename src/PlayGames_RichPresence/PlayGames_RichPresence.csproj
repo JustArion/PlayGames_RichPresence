@@ -8,6 +8,7 @@
         <Nullable>enable</Nullable>
         <UseWindowsForms>true</UseWindowsForms>
         <ImplicitUsings>enable</ImplicitUsings>
+        <PathMap>$(MSBuildProjectDirectory)=/</PathMap>
         <AssemblyName>PlayGames RichPresence</AssemblyName>
         <RootNamespace>Dawn.PlayGames.RichPresence</RootNamespace>
         <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
