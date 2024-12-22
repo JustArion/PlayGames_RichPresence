@@ -20,7 +20,7 @@ internal class ApplicationFeatures
 
         var propertyInfo = (System.Reflection.PropertyInfo)memberExpression.Member;
 
-        var fieldName = ConvertToFieldName(propertyInfo.Name);
+        var fieldName = ConvertToCamelCase(propertyInfo.Name);
         var field = typeof(ApplicationFeatures).GetField(fieldName, System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
 
         if (field == null)
@@ -38,7 +38,7 @@ internal class ApplicationFeatures
 
         var propertyInfo = (System.Reflection.PropertyInfo)memberExpression.Member;
 
-        return ((T)propertyInfo.GetValue(Instance)!);
+        return (T)propertyInfo.GetValue(Instance)!;
     }
 
     public static void SetFeature<T>(Expression<Func<ApplicationFeatures, T>> expression, T value)
@@ -50,7 +50,7 @@ internal class ApplicationFeatures
 
         propertyInfo.SetValue(Instance, value);
     }
-    private static string ConvertToFieldName(string propertyName) => $"_{char.ToLowerInvariant(propertyName[0])}{propertyName[1..]}";
+    private static string ConvertToCamelCase(string propertyName) => $"_{char.ToLowerInvariant(propertyName[0])}{propertyName[1..]}";
 
     private static void SetAndRaiseFeatureChanged<T>(ref T featureBackingField, T newValue, [CallerMemberName] string callerName = "")
     {
