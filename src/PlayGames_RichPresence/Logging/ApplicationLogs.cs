@@ -81,6 +81,8 @@ internal static class ApplicationLogs
         catch (Exception e)
         {
             Console.Error.WriteLine(e);
+            // Setting a null logger prevents exceptions when other places within the code tries to log when setting up the logger has failed already.
+            Log.Logger = new NullLogger();
         }
     }
 }
