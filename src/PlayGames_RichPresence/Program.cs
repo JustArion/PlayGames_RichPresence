@@ -4,14 +4,12 @@ using Dawn.PlayGames.RichPresence.PlayGames;
 
 namespace Dawn.PlayGames.RichPresence;
 
-using System.Diagnostics.CodeAnalysis;
 using DiscordRichPresence;
 using DiscordRPC;
 using Domain;
 using global::Serilog;
 using Tray;
 
-[SuppressMessage("ReSharper", "NotAccessedField.Local")]
 internal static class Program
 {
     internal static LaunchArgs Arguments { get; private set; }
