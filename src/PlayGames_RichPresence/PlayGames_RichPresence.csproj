@@ -13,7 +13,7 @@
         <RootNamespace>Dawn.PlayGames.RichPresence</RootNamespace>
         <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
         <Company>https://github.com/JustArion</Company>
-        <AssemblyVersion>1.2.1</AssemblyVersion>
+        <AssemblyVersion>1.2.2</AssemblyVersion>
     </PropertyGroup>
 
   <PropertyGroup Label="Dotnet Publish Properties">
