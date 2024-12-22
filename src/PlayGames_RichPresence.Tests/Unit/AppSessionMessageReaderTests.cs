@@ -50,6 +50,8 @@ public class AppSessionMessageReaderTests
         var sessionInfos = await _sut.GetAllSessionInfos(fileLock);
 
         // Assert
+        sessionInfos.Should().HaveCountGreaterThanOrEqualTo(1);
+        
         var first = sessionInfos[0];
 
         first.Title.Should().Be("Defense Derby");
@@ -67,6 +69,8 @@ public class AppSessionMessageReaderTests
         var sessionInfos = await _sut.GetAllSessionInfos(fileLock);
 
         // Assert
+        sessionInfos.Should().HaveCountGreaterThanOrEqualTo(1);
+        
         var last = sessionInfos[^1];
 
         last.Title.Should().Be("Arknights");
