@@ -114,7 +114,7 @@ public class RichPresence_Tray
             return;
 
         Startup.StartWithWindows(Application.ProductName!,
-            $"{Application.ExecutablePath} {(
+            $"\"{Application.ExecutablePath}\" {(
                 enabled
                     ? Arguments.CommandLine.Replace(LaunchArgs.RP_DISABLED_ON_START, string.Empty)
                     : $"{Arguments.CommandLine} {LaunchArgs.RP_DISABLED_ON_START}")}");
@@ -132,7 +132,7 @@ public class RichPresence_Tray
             if (startup.Checked)
                 Startup.RemoveStartup(Application.ProductName!);
             else
-                Startup.StartWithWindows(Application.ProductName!, $"\"{Environment.ProcessPath}\" {Arguments.CommandLine}");
+                Startup.StartWithWindows(Application.ProductName!, $"\"{Application.ExecutablePath}\" {Arguments.CommandLine}");
 
             startup.Checked = !startup.Checked;
         };
