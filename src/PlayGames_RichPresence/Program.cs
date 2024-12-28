@@ -48,7 +48,11 @@ internal static class Program
     private static void OnRichPresenceEnabledChanged(object? sender, bool active)
     {
         if (active)
+        {
+            if (_currentPresence != null)
+                _richPresenceHandler.SetPresence(_currentPresence);
             return;
+        }
 
         _richPresenceHandler.RemovePresence();
     }
@@ -148,6 +152,7 @@ internal static class Program
         _richPresenceHandler.RemovePresence();
     }
 
+    private static RichPresence? _currentPresence;
     private static async Task SetPresenceFor(PlayGamesSessionInfo sessionInfo, RichPresence presence)
     {
         var iconUrl = await PlayGamesAppIconScraper.TryGetIconLinkAsync(sessionInfo.PackageName);
@@ -166,5 +171,6 @@ internal static class Program
         }
 
         _richPresenceHandler.SetPresence(presence);
+        _currentPresence = presence;
     }
 }
