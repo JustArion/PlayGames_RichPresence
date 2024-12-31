@@ -76,7 +76,7 @@ internal static class ApplicationLogs
                 (_, _) => Log.Information("Shutting Down...");
             #endif
 
-            Log.Information("Initialized");
+            Log.Information("Initialized on version {ApplicationVersion}", Application.ProductVersion);
         }
         catch (Exception e)
         {

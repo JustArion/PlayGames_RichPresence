@@ -1,19 +1,25 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <OutputType>WinExe</OutputType>
-        <TargetFramework>net8.0-windows</TargetFramework>
-        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-        <LangVersion>latest</LangVersion>
-        <Nullable>enable</Nullable>
-        <UseWindowsForms>true</UseWindowsForms>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <AssemblyName>PlayGames RichPresence</AssemblyName>
-        <RootNamespace>Dawn.PlayGames.RichPresence</RootNamespace>
-        <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
-        <Company>https://github.com/JustArion</Company>
-        <AssemblyVersion>1.2.2</AssemblyVersion>
-    </PropertyGroup>
+  <PropertyGroup>
+      <OutputType>WinExe</OutputType>
+      <TargetFramework>net8.0-windows</TargetFramework>
+      <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+      <LangVersion>latest</LangVersion>
+      <Nullable>enable</Nullable>
+      <UseWindowsForms>true</UseWindowsForms>
+      <ImplicitUsings>enable</ImplicitUsings>
+      <AssemblyName>PlayGames RichPresence</AssemblyName>
+      <RootNamespace>Dawn.PlayGames.RichPresence</RootNamespace>
+      <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
+      <Company>https://github.com/JustArion</Company>
+  </PropertyGroup>
+  
+  <PropertyGroup Label="Versioning">
+    <Version>1.2.2</Version>
+    
+    <AssemblyVersion>$(Version)</AssemblyVersion>
+    <ProductVersion>$Version)</ProductVersion>
+  </PropertyGroup>
 
   <PropertyGroup Label="Dotnet Publish Properties">
     <PublishSingleFile>true</PublishSingleFile>
