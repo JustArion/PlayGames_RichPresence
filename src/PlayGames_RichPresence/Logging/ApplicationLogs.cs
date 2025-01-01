@@ -28,8 +28,7 @@ internal static class ApplicationLogs
 
         if (!Console.IsOutputRedirected)
         {
-            var stdout = new StreamWriter(Console.OpenStandardOutput())
-                { AutoFlush = true };
+            var stdout = new StreamWriter(Console.OpenStandardOutput()) { AutoFlush = true };
             Console.SetOut(stdout);
         }
 
@@ -52,7 +51,7 @@ internal static class ApplicationLogs
                     buffered: true,
                     retainedFileCountLimit: 1,
                     rollOnFileSizeLimit: true,
-                    fileSizeLimitBytes: (long)Math.Pow(1024, 2) * 20,
+                    fileSizeLimitBytes: (long)Math.Pow(1024, 2) * 20, // 20mb
                     flushToDiskInterval: TimeSpan.FromSeconds(1));
 
 
