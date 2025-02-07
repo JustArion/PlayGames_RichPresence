@@ -23,8 +23,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Remove="Assets\Service.log" />
-      <AdditionalFiles Include="Assets\Service.log">
+      <AdditionalFiles Include="Assets\*">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </AdditionalFiles>
     </ItemGroup>
