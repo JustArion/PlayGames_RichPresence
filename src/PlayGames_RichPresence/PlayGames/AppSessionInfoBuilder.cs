@@ -8,6 +8,11 @@ using global::Serilog;
 internal static partial class AppSessionInfoBuilder
 {
     private const string STARTED_TIMESTAMP_FORMAT = "M/d/yyyy h:mm:ss tt zzz";
+    private static readonly string[] SystemLevelPackageNames =
+        [
+            "com.android",
+            "com.google"
+        ];
     public static PlayGamesSessionInfo? Build(string info)
     {
         var packageNameMatch = PackageNameRegex().Match(info);
@@ -17,7 +22,7 @@ internal static partial class AppSessionInfoBuilder
         var packageName = packageNameMatch.Groups[1].Value.Replace("\r", string.Empty);
 
         // We skip system level applications such as com.android.settings (The settings application for the emulator)
-        if (packageName.StartsWith("com.android"))
+        if (SystemLevelPackageNames.Contains(packageName))
         {
             Log.Verbose("Skipping system level application. {PackageName}", packageName);
             return null;
