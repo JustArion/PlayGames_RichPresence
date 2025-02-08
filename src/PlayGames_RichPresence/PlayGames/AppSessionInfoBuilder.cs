@@ -84,14 +84,21 @@ internal static partial class AppSessionInfoBuilder
 
     private static string GetValueFromMatch(Match match) => match.Groups[1].Value.Replace("\r", string.Empty);
 
+    // We prefer matches that does not start with 'com.android.launcher'
+    private static string GetOpinionatedValueFromMatch(MatchCollection packageNameMatches)
+    {
+        return packageNameMatches.FirstOrDefault(x => !x.Value.StartsWith(ANDROID_LAUNCHER_HINT))?.Value
+               ?? packageNameMatches.First().Value;
+    }
+
     private const string ANDROID_LAUNCHER_HINT = "com.android.launcher";
     public static PlayGamesSessionInfo? BuildFromEmulatorState(string info)
     {
-        var packageNameMatch = EmulatorStateRegexes.DisplayedTaskPackageName().Match(info);
-        if (!packageNameMatch.Success)
+        var packageNameMatch = EmulatorStateRegexes.DisplayedTaskPackageName().Matches(info);
+        if (packageNameMatch.Count == 0)
             return null;
 
-        var displayedTaskPackageName = GetValueFromMatch(packageNameMatch);
+        var displayedTaskPackageName = GetOpinionatedValueFromMatch(packageNameMatch);
 
         // We skip system level applications such as com.android.settings (The settings application for the emulator)
         if (!displayedTaskPackageName.StartsWith(ANDROID_LAUNCHER_HINT) && SystemLevelPackageNames.Any(partialPackageName => displayedTaskPackageName.StartsWith(partialPackageName)))
@@ -101,7 +108,7 @@ internal static partial class AppSessionInfoBuilder
         }
 
         var foregroundPackageNameMatch = EmulatorStateRegexes.ForegroundPackageName().Match(info);
-        if (!packageNameMatch.Success)
+        if (!foregroundPackageNameMatch.Success)
             return null;
 
         var foregroundPackageName = GetValueFromMatch(foregroundPackageNameMatch);
@@ -153,9 +160,6 @@ internal static partial class AppSessionInfoBuilder
 
             startedTimestamp = startedTimestamp.ToUniversalTime();
         }
-
-
-
 
         var title = packageName.Split('.').Last();
 
