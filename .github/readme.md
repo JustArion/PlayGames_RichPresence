@@ -1,5 +1,6 @@
 > [!NOTE]
-> Additional options available in the Tray Icon
+> - Additional options available in the Tray Icon
+> - Play Games Developer Emulator is also supported
 
 ## Table of Contents
 - [Requirements](#requirements)
