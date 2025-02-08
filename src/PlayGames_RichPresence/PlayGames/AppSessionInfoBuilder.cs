@@ -81,8 +81,8 @@ internal static partial class AppSessionInfoBuilder
     // We prefer matches that does not start with 'com.android.launcher'
     private static string GetOpinionatedValueFromMatch(MatchCollection packageNameMatches)
     {
-        return packageNameMatches.FirstOrDefault(x => !x.Value.StartsWith(ANDROID_LAUNCHER_HINT))?.Value
-               ?? packageNameMatches.First().Value;
+        return packageNameMatches.FirstOrDefault(x => !x.Value.StartsWith(ANDROID_LAUNCHER_HINT))?.Groups[1].Value
+               ?? packageNameMatches.First().Groups[1].Value;
     }
 
     private const string ANDROID_LAUNCHER_HINT = "com.android.launcher";
