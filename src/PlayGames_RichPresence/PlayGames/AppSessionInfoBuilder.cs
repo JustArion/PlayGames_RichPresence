@@ -183,8 +183,11 @@ internal static partial class AppSessionInfoBuilder
         [GeneratedRegex("readyTimestamp=(.+?)$", RegexOptions.Multiline)]
         internal static partial Regex StartedTimestampRegex(); // readyTimestamp=250207 17:59:08.311+00:00
 
-        [GeneratedRegex("status=(.+?)$", RegexOptions.Multiline)]
-        internal static partial Regex AppSessionStateRegex(); // status=Running
+        // status=Running
+        // Stopping (Emulator stopped normally (shutdown)) - lastKnownHealthStatus=No ERROR; emulator is healthy
+
+        [GeneratedRegex("status=(.+?)(?= |$)", RegexOptions.Multiline)]
+        internal static partial Regex AppSessionStateRegex();
     }
 
 }
