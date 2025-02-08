@@ -30,7 +30,7 @@ public class PlayGamesAppSessionMessageReader(string filePath) : IDisposable
 
     private async Task InitiateWatchOperation()
     {
-        Log.Verbose("Doing fresh read-operation pass");
+        Log.Verbose("Doing fresh read-operation pass on file {Path}", filePath);
 
         // Wait till the file exists
         if (!File.Exists(filePath))
@@ -97,7 +97,7 @@ public class PlayGamesAppSessionMessageReader(string filePath) : IDisposable
             var reader = fileLock.Reader;
             if (_lastStreamPosition > reader.BaseStream.Length)
             {
-                Log.Verbose("File was truncated, resetting stream position");
+                Log.Verbose("{Path} file was truncated, resetting stream position", filePath);
                 await CatchUpAsync(fileLock);
                 return;
             }
@@ -122,11 +122,11 @@ public class PlayGamesAppSessionMessageReader(string filePath) : IDisposable
 
     private uint _initialLinesRead;
 
-    private async Task<string?> ReadLineAsync(StreamReader reader)
+    private async Task<string?> ReadLineAsync(StreamReader reader, bool increment = true)
     {
         var retVal = await reader.ReadLineAsync();
 
-        if (retVal != null)
+        if (increment && retVal != null)
             Interlocked.Increment(ref _initialLinesRead);
 
         return retVal;
@@ -148,23 +148,21 @@ public class PlayGamesAppSessionMessageReader(string filePath) : IDisposable
             if (string.IsNullOrWhiteSpace(line))
                 continue;
 
-            if (!line.Contains("AppSessionModule: sessions updated:"))
-                continue;
-
-            var sb = new StringBuilder();
-            sb.AppendLine("{");
-            line = await ReadLineAsync(reader);
-
-            while (!string.IsNullOrWhiteSpace(line) && line != "}")
+            PlayGamesSessionInfo? sessionInfo = null;
+            if (line.Contains("AppSessionModule: sessions updated:"))
             {
-                sb.AppendLine(line);
-                line = await ReadLineAsync(reader);
+                // This delay is needed to let the GPG finish writing the entry to the file as its a multi-line log
+                var appSessionMessage = await ExtractLogEntry(reader);
+                sessionInfo = AppSessionInfoBuilder.BuildFromAppSession(appSessionMessage);
+
             }
-
-            sb.AppendLine("}");
-            var appSessionMessage = sb.ToString();
-
-            var sessionInfo = AppSessionInfoBuilder.Build(appSessionMessage);
+            else if (line.Contains("Emulator state updated:"))
+            {
+                // This delay is needed to let the GPG finish writing the entry to the file as its a multi-line log
+                _ = await ReadLineAsync(reader);
+                var appSessionMessage = await ExtractLogEntry(reader);
+                sessionInfo = AppSessionInfoBuilder.BuildFromEmulatorState(appSessionMessage);
+            }
 
             if (sessionInfo == null)
                 continue;
@@ -180,33 +178,49 @@ public class PlayGamesAppSessionMessageReader(string filePath) : IDisposable
         if (string.IsNullOrWhiteSpace(line))
             return;
 
-        if (!line.Contains("AppSessionModule: sessions updated:"))
-            return;
-
-        await Task.Delay(TimeSpan.FromSeconds(1));
-
-        var sb = new StringBuilder();
-        sb.AppendLine("{");
-        line = await reader.ReadLineAsync();
-
-        while (!string.IsNullOrWhiteSpace(line) && line != "}")
+        PlayGamesSessionInfo? sessionInfo = null;
+        if (line.Contains("AppSessionModule: sessions updated:"))
         {
-            sb.AppendLine(line);
-            line = await reader.ReadLineAsync();
+            // This delay is needed to let the GPG finish writing the entry to the file as its a multi-line log
+            await Task.Delay(TimeSpan.FromSeconds(1));
+            var appSessionMessage = await ExtractLogEntry(reader, false);
+            sessionInfo = AppSessionInfoBuilder.BuildFromAppSession(appSessionMessage);
+
         }
+        else if (line.Contains("Emulator state updated:"))
+        {
+            // This delay is needed to let the GPG finish writing the entry to the file as its a multi-line log
+            await Task.Delay(TimeSpan.FromMilliseconds(100)); // The rate is a bit longer due to the output being more of EmulatorState events
 
-        sb.AppendLine("}");
-        var appSessionMessage = sb.ToString();
-        #if LOG_APP_SESSION_MESSAGES
-        _logger.Debug("Received AppSession Message: \n{Line}", appSessionMessage);
-        #endif
-
-        var sessionInfo = AppSessionInfoBuilder.Build(appSessionMessage);
+            _ = await ReadLineAsync(reader, false); // Skip the next {
+            var appSessionMessage = await ExtractLogEntry(reader, false);
+            sessionInfo = AppSessionInfoBuilder.BuildFromEmulatorState(appSessionMessage);
+        }
 
         if (sessionInfo == null)
             return;
 
         OnSessionInfoReceived?.Invoke(this, sessionInfo);
+    }
+
+    private async Task<string> ExtractLogEntry(StreamReader reader, bool increment = true)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine("{");
+        var line = await ReadLineAsync(reader, false);
+
+        while (!string.IsNullOrWhiteSpace(line) && line != "}")
+        {
+            sb.AppendLine(line);
+            line = await ReadLineAsync(reader, increment);
+        }
+
+        sb.AppendLine("}");
+        var appSessionMessage = sb.ToString();
+#if LOG_APP_SESSION_MESSAGES
+        _logger.Debug("Received AppSession Message: \n{Line}", appSessionMessage);
+#endif
+        return appSessionMessage;
     }
 
     public void Stop()
