@@ -153,8 +153,8 @@ internal static partial class AppSessionInfoBuilder
 
     private static partial class EmulatorStateRegexes
     {
-                                                       // 250207 17:59:08.311+00:00
-        internal const string STARTED_TIMESTAMP_FORMAT = "yyMMdd HH:mm:ss.fffK";
+                                                       // 250207 18:00:04.030+1
+        internal const string STARTED_TIMESTAMP_FORMAT = "yyMMdd HH:mm:ss.fffz";
 
         [GeneratedRegex("foreground_task=(.+?) }", RegexOptions.Multiline)]
         internal static partial Regex ForegroundPackageName(); // foreground_task=com.YoStarEN.Arknights }
@@ -162,8 +162,8 @@ internal static partial class AppSessionInfoBuilder
         [GeneratedRegex("task=(.+?), ", RegexOptions.Multiline)]
         internal static partial Regex DisplayedTaskPackageName(); //       { display_id=0, task=com.YoStarEN.Arknights, foreground=True },
 
-        [GeneratedRegex("readyTimestamp=(.+?)$", RegexOptions.Multiline)]
-        internal static partial Regex StartedTimestampRegex(); // readyTimestamp=250207 17:59:08.311+00:00
+        [GeneratedRegex(@"^(.+?\+\d) ", RegexOptions.Multiline)]
+        internal static partial Regex StartedTimestampRegex(); // 250207 18:00:04.030+1 39 INFO  EmulatorStateLogger: Emulator state updated:
 
         // status=Running
         // Stopping (Emulator stopped normally (shutdown)) - lastKnownHealthStatus=No ERROR; emulator is healthy
