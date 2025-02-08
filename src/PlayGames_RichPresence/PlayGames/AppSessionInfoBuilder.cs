@@ -7,6 +7,19 @@ using global::Serilog;
 
 internal static partial class AppSessionInfoBuilder
 {
+    private static bool TryParseRegex(Regex regex, string info, out string value)
+    {
+        var match = regex.Match(info);
+        if (!match.Success)
+        {
+            value = string.Empty;
+            return false;
+        }
+
+        value = GetValueFromMatch(match);
+        return true;
+    }
+
     private static readonly string[] SystemLevelPackageNames =
         [
             "com.android",
@@ -33,11 +46,8 @@ internal static partial class AppSessionInfoBuilder
     }
     public static PlayGamesSessionInfo? BuildFromAppSession(string info)
     {
-        var packageNameMatch = AppSessionRegexes.PackageNameRegex().Match(info);
-        if (!packageNameMatch.Success)
+        if (!TryParseRegex(AppSessionRegexes.PackageNameRegex(), info, out var packageName))
             return null;
-
-        var packageName = GetValueFromMatch(packageNameMatch);
 
         // We skip system level applications such as com.android.settings (The settings application for the emulator)
         if (SystemLevelPackageNames.Any(partialPackageName => packageName.StartsWith(partialPackageName)))
@@ -46,19 +56,11 @@ internal static partial class AppSessionInfoBuilder
             return null;
         }
 
-        var titleMatch = AppSessionRegexes.TitleRegex().Match(info);
-        if (!titleMatch.Success)
+        if (!(TryParseRegex(AppSessionRegexes.TitleRegex(), info, out var title) &&
+            TryParseRegex(AppSessionRegexes.StartedTimestampRegex(), info, out var startedTimestampAsString) &&
+            TryParseRegex(AppSessionRegexes.AppSessionStateRegex(), info, out var stateAsString)))
             return null;
 
-        var startedTimestampMatch = AppSessionRegexes.StartedTimestampRegex().Match(info);
-        if (!startedTimestampMatch.Success)
-            return null;
-
-        var stateMatch = AppSessionRegexes.AppSessionStateRegex().Match(info);
-        if (!stateMatch.Success)
-            return null;
-
-        var startedTimestampAsString = GetValueFromMatch(startedTimestampMatch);
 
         if (!DateTimeOffset.TryParseExact(startedTimestampAsString, AppSessionRegexes.STARTED_TIMESTAMP_FORMAT, null, DateTimeStyles.None , out var startedTimestamp))
         {
@@ -66,20 +68,12 @@ internal static partial class AppSessionInfoBuilder
             return null;
         }
 
-        var stateAsString = GetValueFromMatch(stateMatch);
 
-        if (!Enum.TryParse<AppSessionState>(stateAsString, out var appState))
-        {
-            Log.Warning("Failed to parse app state: {AppStateString}", stateAsString);
-            return null;
-        }
+        if (Enum.TryParse<AppSessionState>(stateAsString, out var appState))
+            return new PlayGamesSessionInfo(packageName, startedTimestamp, title, appState) { RawText = info };
 
-        var title = GetValueFromMatch(titleMatch);
-
-        return new PlayGamesSessionInfo(packageName, startedTimestamp, title, appState)
-        {
-            RawText = info
-        };
+        Log.Warning("Failed to parse app state: {AppStateString}", stateAsString);
+        return null;
     }
 
     private static string GetValueFromMatch(Match match) => match.Groups[1].Value.Replace("\r", string.Empty);
@@ -107,12 +101,8 @@ internal static partial class AppSessionInfoBuilder
             return null;
         }
 
-        var foregroundPackageNameMatch = EmulatorStateRegexes.ForegroundPackageName().Match(info);
-        if (!foregroundPackageNameMatch.Success)
+        if (!TryParseRegex(EmulatorStateRegexes.ForegroundPackageName(), info, out var foregroundPackageName))
             return null;
-
-        var foregroundPackageName = GetValueFromMatch(foregroundPackageNameMatch);
-
 
         var packageName = foregroundPackageName.StartsWith(ANDROID_LAUNCHER_HINT)
             ? displayedTaskPackageName
@@ -121,15 +111,12 @@ internal static partial class AppSessionInfoBuilder
         if (string.IsNullOrWhiteSpace(packageName) || packageName.StartsWith(ANDROID_LAUNCHER_HINT))
             return null;
 
-        var startedTimestampMatch = EmulatorStateRegexes.StartedTimestampRegex().Match(info);
-        if (!startedTimestampMatch.Success)
+        if (!TryParseRegex(EmulatorStateRegexes.StartedTimestampRegex(), info, out var startedTimestampAsString))
             return null;
 
-        var stateMatch = EmulatorStateRegexes.AppSessionStateRegex().Match(info);
-        if (!stateMatch.Success)
-            return null;
 
-        var stateAsString = GetValueFromMatch(stateMatch);
+        if (!TryParseRegex(EmulatorStateRegexes.AppSessionStateRegex(), info, out var stateAsString))
+            return null;
 
         var appState = AppSessionState.None;
 
@@ -138,20 +125,15 @@ internal static partial class AppSessionInfoBuilder
                 ? AppSessionState.Stopped
                 : AppSessionState.Starting;
 
-        if (appState == AppSessionState.None)
+        if (appState == AppSessionState.None && !Enum.TryParse(stateAsString, out appState))
         {
-            if (!Enum.TryParse(stateAsString, out appState))
-            {
-                Log.Warning("Failed to parse app state: {AppStateString}", stateAsString);
-                return null;
-            }
+            Log.Warning("Failed to parse app state: {AppStateString}", stateAsString);
+            return null;
         }
 
         DateTimeOffset startedTimestamp = default;
         if (appState != AppSessionState.Starting)
         {
-            var startedTimestampAsString = GetValueFromMatch(startedTimestampMatch);
-
             if (!DateTimeOffset.TryParseExact(startedTimestampAsString, EmulatorStateRegexes.STARTED_TIMESTAMP_FORMAT, null, DateTimeStyles.None , out startedTimestamp))
             {
                 Log.Warning("Failed to parse started timestamp: {StartedTimestampString}", startedTimestampAsString);
