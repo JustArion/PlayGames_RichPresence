@@ -122,14 +122,14 @@ public class PlayGamesAppSessionMessageReader(string filePath) : IDisposable
 
     private uint _initialLinesRead;
 
-    private async Task<string?> ReadLineAsync(StreamReader reader, bool increment = true)
+    private async Task<string> ReadLineAsync(StreamReader reader, bool increment = true)
     {
         var retVal = await reader.ReadLineAsync();
 
         if (increment && retVal != null)
             Interlocked.Increment(ref _initialLinesRead);
 
-        return retVal;
+        return retVal ?? string.Empty;
     }
     /// <summary>
     /// The method ensures that a Rich Presence will be enabled if a game is running before this program started.
@@ -151,16 +151,13 @@ public class PlayGamesAppSessionMessageReader(string filePath) : IDisposable
             PlayGamesSessionInfo? sessionInfo = null;
             if (line.Contains("AppSessionModule: sessions updated:"))
             {
-                // This delay is needed to let the GPG finish writing the entry to the file as its a multi-line log
-                var appSessionMessage = await ExtractLogEntry(reader);
+                var appSessionMessage = await ExtractLogEntry(reader, line);
                 sessionInfo = AppSessionInfoBuilder.BuildFromAppSession(appSessionMessage);
 
             }
             else if (line.Contains("Emulator state updated:"))
             {
-                // This delay is needed to let the GPG finish writing the entry to the file as its a multi-line log
-                _ = await ReadLineAsync(reader);
-                var appSessionMessage = await ExtractLogEntry(reader);
+                var appSessionMessage = await ExtractLogEntry(reader, line);
                 sessionInfo = AppSessionInfoBuilder.BuildFromEmulatorState(appSessionMessage);
             }
 
@@ -183,7 +180,7 @@ public class PlayGamesAppSessionMessageReader(string filePath) : IDisposable
         {
             // This delay is needed to let the GPG finish writing the entry to the file as its a multi-line log
             await Task.Delay(TimeSpan.FromSeconds(1));
-            var appSessionMessage = await ExtractLogEntry(reader, false);
+            var appSessionMessage = await ExtractLogEntry(reader, line, false);
             sessionInfo = AppSessionInfoBuilder.BuildFromAppSession(appSessionMessage);
 
         }
@@ -192,8 +189,7 @@ public class PlayGamesAppSessionMessageReader(string filePath) : IDisposable
             // This delay is needed to let the GPG finish writing the entry to the file as its a multi-line log
             await Task.Delay(TimeSpan.FromMilliseconds(100)); // The rate is a bit longer due to the output being more of EmulatorState events
 
-            _ = await ReadLineAsync(reader, false); // Skip the next {
-            var appSessionMessage = await ExtractLogEntry(reader, false);
+            var appSessionMessage = await ExtractLogEntry(reader, line, false);
             sessionInfo = AppSessionInfoBuilder.BuildFromEmulatorState(appSessionMessage);
         }
 
@@ -203,11 +199,11 @@ public class PlayGamesAppSessionMessageReader(string filePath) : IDisposable
         OnSessionInfoReceived?.Invoke(this, sessionInfo);
     }
 
-    private async Task<string> ExtractLogEntry(StreamReader reader, bool increment = true)
+    private async Task<string> ExtractLogEntry(StreamReader reader, string line, bool increment = true)
     {
         var sb = new StringBuilder();
-        sb.AppendLine("{");
-        var line = await ReadLineAsync(reader, false);
+        sb.AppendLine(line);
+        line = await ReadLineAsync(reader, false);
 
         while (!string.IsNullOrWhiteSpace(line) && line != "}")
         {
@@ -217,9 +213,9 @@ public class PlayGamesAppSessionMessageReader(string filePath) : IDisposable
 
         sb.AppendLine("}");
         var appSessionMessage = sb.ToString();
-#if LOG_APP_SESSION_MESSAGES
+        #if LOG_APP_SESSION_MESSAGES
         _logger.Debug("Received AppSession Message: \n{Line}", appSessionMessage);
-#endif
+        #endif
         return appSessionMessage;
     }
 
