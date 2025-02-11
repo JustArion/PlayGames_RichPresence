@@ -39,12 +39,16 @@ public class PlayGamesAppSessionMessageReader(string filePath) : IDisposable
             await Task.Delay(TimeSpan.FromSeconds(5));
         }
 
-        _reading = true;
+        if (File.Exists(filePath))
+        {
+            _reading = true;
 
-        await using (var fileLock = AquireFileLock())
-            await CatchUpAsync(fileLock);
+            await using (var fileLock = AquireFileLock())
+                await CatchUpAsync(fileLock);
 
-        _reading = false;
+            _reading = false;
+        }
+
         _logWatcher.Error += LogFileWatcherOnError;
         _logWatcher.FileChanged += LogFileWatcherOnFileChanged;
         _logWatcher.Initialize();
