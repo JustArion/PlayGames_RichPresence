@@ -52,7 +52,7 @@ internal static partial class AppSessionInfoBuilder
         // We skip system level applications such as com.android.settings (The settings application for the emulator)
         if (SystemLevelPackageNames.Any(partialPackageName => packageName.StartsWith(partialPackageName)))
         {
-            Log.Verbose("Skipping system level application. {PackageName}", packageName);
+            // Log.Verbose("Skipping system level application. {PackageName}", packageName);
             return null;
         }
 
@@ -97,7 +97,7 @@ internal static partial class AppSessionInfoBuilder
         // We skip system level applications such as com.android.settings (The settings application for the emulator)
         if (!displayedTaskPackageName.StartsWith(ANDROID_LAUNCHER_HINT) && SystemLevelPackageNames.Any(partialPackageName => displayedTaskPackageName.StartsWith(partialPackageName)))
         {
-            Log.Verbose("Skipping system level application. {PackageName}", displayedTaskPackageName);
+            // Log.Verbose("Skipping system level application. {PackageName}", displayedTaskPackageName);
             return null;
         }
 
