@@ -39,19 +39,24 @@ public class PlayGamesAppSessionMessageReader(string filePath) : IDisposable
             await Task.Delay(TimeSpan.FromSeconds(5));
         }
 
-        if (File.Exists(filePath))
-        {
-            _reading = true;
-
-            await using (var fileLock = AquireFileLock())
-                await CatchUpAsync(fileLock);
-
-            _reading = false;
-        }
-
         _logWatcher.Error += LogFileWatcherOnError;
         _logWatcher.FileChanged += LogFileWatcherOnFileChanged;
-        _logWatcher.Initialize();
+        _logWatcher.Initialize(async () =>
+        {
+            _reading = true;
+            try
+            {
+                if (File.Exists(filePath))
+                {
+                    await using var fileLock = AquireFileLock();
+                    await CatchUpAsync(fileLock);
+                }
+            }
+            finally
+            {
+                _reading = false;
+            }
+        });
     }
 
     private async Task CatchUpAsync(FileLock fileLock)
@@ -183,7 +188,7 @@ public class PlayGamesAppSessionMessageReader(string filePath) : IDisposable
         if (line.Contains("AppSessionModule: sessions updated:"))
         {
             // This delay is needed to let the GPG finish writing the entry to the file as its a multi-line log
-            await Task.Delay(TimeSpan.FromSeconds(1));
+            await Task.Delay(TimeSpan.FromMilliseconds(100));
             var appSessionMessage = await ExtractLogEntry(reader, line, false);
             sessionInfo = AppSessionInfoBuilder.BuildFromAppSession(appSessionMessage);
 
@@ -191,7 +196,7 @@ public class PlayGamesAppSessionMessageReader(string filePath) : IDisposable
         else if (line.Contains("Emulator state updated:"))
         {
             // This delay is needed to let the GPG finish writing the entry to the file as its a multi-line log
-            await Task.Delay(TimeSpan.FromMilliseconds(100)); // The rate is a bit longer due to the output being more of EmulatorState events
+            await Task.Delay(TimeSpan.FromMilliseconds(100));
 
             var appSessionMessage = await ExtractLogEntry(reader, line, false);
             sessionInfo = AppSessionInfoBuilder.BuildFromEmulatorState(appSessionMessage);

@@ -19,6 +19,19 @@ public class PlayGamesLogWatcher : IDisposable
             while (fi.Directory is not { Exists: true })
                 await Task.Delay(TimeSpan.FromMinutes(1));
 
+            if (_initializationSubscription != null)
+            {
+                try
+                {
+                    await _initializationSubscription();
+
+                }
+                catch (Exception e)
+                {
+                    Log.Error(e, "An error occurred during initialization");
+                }
+
+            }
             Log.Information("'{LogPath}' is now present, will start watching", filePath);
 
             CreateLogWatcher(filePath);
@@ -41,14 +54,18 @@ public class PlayGamesLogWatcher : IDisposable
     public event EventHandler<ErrorEventArgs>? Error;
 
     private bool _shouldRaiseEvents;
+    private Func<Task>? _initializationSubscription;
 
-    public void Initialize()
+    public void Initialize(Func<Task> onInitialize)
     {
         if (_logFileWatcher is null)
         {
+            _initializationSubscription = onInitialize;
             _shouldRaiseEvents = true;
             return;
         }
+
+        Task.Run(onInitialize);
         _logFileWatcher.EnableRaisingEvents = true;
     }
 
