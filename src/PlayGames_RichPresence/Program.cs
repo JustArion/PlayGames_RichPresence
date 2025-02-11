@@ -48,6 +48,7 @@ internal static class Program
             _processBinding = new ProcessBinding(Arguments.ProcessBinding);
 
         Application.Run();
+        _richPresenceHandler.Dispose();
         _processBinding?.Dispose();
     }
 
@@ -99,7 +100,7 @@ internal static class Program
 
         if (Process.GetProcessesByName("crosvm").Length == 0)
         {
-            Log.Debug("Emulator is not running, likely a log-artifact");
+            Log.Debug("Emulator is not running, likely a log-artifact, crosvm.exe ({SessionTitle})", sessionInfo.Title);
             return;
         }
 

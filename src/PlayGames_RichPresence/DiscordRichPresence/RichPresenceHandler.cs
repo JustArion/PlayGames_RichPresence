@@ -17,11 +17,23 @@ public class RichPresenceHandler : IDisposable
 
     public RichPresenceHandler()
     {
-        InitializeUnderlyingClient();
-        AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
+        _logger.Debug("Initializing IPC Client");
+
+        var applicationId = Arguments.HasCustomApplicationId
+            ? Arguments.CustomApplicationId
+            : DEFAULT_APPLICATION_ID;
+
+        _client = new DiscordRpcClient(applicationId, logger: (SerilogToDiscordLogger)_logger);
+
+        _client.SkipIdenticalPresence = true;
+        _client.Initialize();
+        #if LISTEN_TO_RPCS
+        _client.OnRpcMessage += (_, msg) => Log.Debug("Received RPC Message: {@Message}", msg);
+        #endif
+
+        _client.OnPresenceUpdate += OnPresenceUpdate;
     }
 
-    private void OnProcessExit(object? sender, EventArgs e) => Dispose();
 
     public void SetPresence(RichPresence? presence)
     {
@@ -41,25 +53,6 @@ public class RichPresenceHandler : IDisposable
     {
         Interlocked.Exchange(ref _currentPresence, null);
         _client.ClearPresence();
-    }
-
-    private void InitializeUnderlyingClient()
-    {
-        _logger.Debug("Initializing IPC Client");
-
-        var applicationId = Arguments.HasCustomApplicationId
-            ? Arguments.CustomApplicationId
-            : DEFAULT_APPLICATION_ID;
-
-        _client = new DiscordRpcClient(applicationId, logger: (SerilogToDiscordLogger)_logger);
-
-        _client.SkipIdenticalPresence = true;
-        _client.Initialize();
-        #if LISTEN_TO_RPCS
-        _client.OnRpcMessage += (_, msg) => Log.Debug("Received RPC Message: {@Message}", msg);
-        #endif
-
-        _client.OnPresenceUpdate += OnPresenceUpdate;
     }
 
     private void OnPresenceUpdate(object _, PresenceMessage args)
