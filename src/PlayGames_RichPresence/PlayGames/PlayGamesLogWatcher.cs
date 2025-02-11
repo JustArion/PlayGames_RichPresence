@@ -19,6 +19,8 @@ public class PlayGamesLogWatcher : IDisposable
             while (fi.Directory is not { Exists: true })
                 await Task.Delay(TimeSpan.FromMinutes(1));
 
+            Log.Information("'{LogPath}' is now present, will start watching", filePath);
+
             CreateLogWatcher(filePath);
         }, TaskCreationOptions.LongRunning);
     }
