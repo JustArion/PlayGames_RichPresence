@@ -47,7 +47,7 @@ internal static class ApplicationLogs
                     outputTemplate: LOGGING_FORMAT,
                     restrictedToMinimumLevel: Arguments.ExtendedLogging
                         ? LogEventLevel.Verbose
-                        : LogEventLevel.Warning,
+                        : LogEventLevel.Information,
                     buffered: true,
                     retainedFileCountLimit: 1,
                     rollOnFileSizeLimit: true,
