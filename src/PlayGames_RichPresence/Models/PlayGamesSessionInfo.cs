@@ -2,5 +2,5 @@
 
 public record PlayGamesSessionInfo(string PackageName, DateTimeOffset StartTime, string Title, AppSessionState AppState)
 {
-    public string RawText { get; init; }
+    public string RawText { get; init; } = "";
 }
