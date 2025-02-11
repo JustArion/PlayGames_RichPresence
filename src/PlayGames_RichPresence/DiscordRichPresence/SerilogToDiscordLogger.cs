@@ -28,6 +28,9 @@ public class SerilogToDiscordLogger(ILogger logger) : DiscordRPC.Logging.ILogger
 
     public void Error(string message, params object[] args)
     {
+        if (message.StartsWith("Failed connection to"))
+            return;
+
         if (Level <= LogLevel.Error)
             logger.Warning(message, args);
     }
