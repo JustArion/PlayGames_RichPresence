@@ -9,10 +9,12 @@ using global::Serilog.Core;
 
 public class RichPresenceHandler : IDisposable
 {
+    // GPG or Discord might detect on client.exe now and uses the app id of: "1316897030999900210"
+    // This does NOT include any game data but exclusively just that the app is running.
     private const string DEFAULT_APPLICATION_ID = "1204167311922167860";
 
     private readonly Logger _logger = (Logger)Log.ForContext<RichPresenceHandler>();
-    private DiscordRpcClient _client = null!;
+    private DiscordRpcClient _client;
     private RichPresence? _currentPresence;
 
     public RichPresenceHandler()
