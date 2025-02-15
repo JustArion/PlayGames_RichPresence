@@ -8,6 +8,7 @@ public class PlayGamesLogWatcher : IDisposable
         var fi = new FileInfo(filePath);
         if (fi.Directory is { Exists: true })
         {
+            Log.Information("'{LogPath}' is present, will start watching", filePath);
             CreateLogWatcher(filePath);
             return;
         }

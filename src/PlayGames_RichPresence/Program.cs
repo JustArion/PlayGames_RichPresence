@@ -162,7 +162,14 @@ internal static class Program
     private static RichPresence? _currentPresence;
     private static async Task SetPresenceFor(PlayGamesSessionInfo sessionInfo, RichPresence presence)
     {
-        var iconUrl = await PlayGamesAppIconScraper.TryGetIconLinkAsync(sessionInfo.PackageName);
+        var scrapedInfo = await PlayGamesWebScraper.TryGetPackageInfo(sessionInfo.PackageName);
+        var iconUrl = scrapedInfo?.IconLink;
+        if (scrapedInfo != null && !string.IsNullOrWhiteSpace(scrapedInfo.Title))
+        {
+            Log.Information("Using remedied App Title: {PreviousTitle} -> {CurrentTitle}", sessionInfo.Title, scrapedInfo.Title);
+            sessionInfo.Title = scrapedInfo.Title;
+        }
+
 
         presence.Details ??= sessionInfo.Title;
 

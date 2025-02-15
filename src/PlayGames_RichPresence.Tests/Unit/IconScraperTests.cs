@@ -4,7 +4,7 @@ using System.Web;
 using Dawn.PlayGames.RichPresence.PlayGames;
 using FluentAssertions;
 
-[TestFixture(TestOf = typeof(PlayGamesAppIconScraper))]
+[TestFixture(TestOf = typeof(PlayGamesWebScraper))]
 public class IconScraperTests
 {
     private static readonly string[] _appPackages = ["com.YoStarEN.Arknights", "com.krafton.defensederby"];
@@ -14,12 +14,12 @@ public class IconScraperTests
         // Act
         foreach (var appPackage in _appPackages)
         {
-            var link = await PlayGamesAppIconScraper.TryGetIconLinkAsync(appPackage);
+            var packageInfo = await PlayGamesWebScraper.TryGetPackageInfo(appPackage);
             // Assert
 
-            link.Should().NotBeNullOrEmpty();
+            packageInfo.Should().NotBeNull();
             
-            Uri.TryCreate(link, UriKind.Absolute, out var uri).Should().BeTrue();
+            Uri.TryCreate(packageInfo!.IconLink, UriKind.Absolute, out var uri).Should().BeTrue();
             uri!.Scheme.Should().Be("https");
         }
 

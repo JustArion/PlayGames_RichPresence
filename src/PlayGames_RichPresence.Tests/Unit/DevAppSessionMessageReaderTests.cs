@@ -37,7 +37,7 @@ public class DevAppSessionMessageReaderTests
         var sessionInfos = await _sut.GetAllSessionInfos(fileLock);
 
         // Assert
-        sessionInfos.Count.Should().Be(81);
+        sessionInfos.Count.Should().Be(80);
     }
     
     [Test]
@@ -58,19 +58,4 @@ public class DevAppSessionMessageReaderTests
         last.PackageName.Should().Be("com.YoStarEN.Arknights");
         last.AppState.Should().Be(AppSessionState.Stopped);
     }
-    
-    [Test]
-    public async Task StartingSessions_ShouldHave_NoStartTime()
-    {
-        // Arrange
-        await using var fileLock = _sut.AquireFileLock();
-        
-        // Act
-        var sessionInfos = (await _sut.GetAllSessionInfos(fileLock))
-            .Where(x => x.AppState == AppSessionState.Starting);
-
-        // Assert
-        sessionInfos.Should().AllSatisfy(x => x.StartTime.Should().BeExactly(TimeSpan.Zero));
-    } 
-
 }

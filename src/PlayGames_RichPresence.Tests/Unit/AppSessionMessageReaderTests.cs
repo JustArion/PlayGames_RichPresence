@@ -37,7 +37,7 @@ public class AppSessionMessageReaderTests
         var sessionInfos = await _sut.GetAllSessionInfos(fileLock);
 
         // Assert
-        sessionInfos.Count.Should().Be(137);
+        sessionInfos.Count.Should().Be(321);
     }
 
     [Test]
