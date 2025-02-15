@@ -1,6 +1,5 @@
 ﻿namespace Dawn.Serilog.CustomEnrichers;
 
-using global::Serilog;
 using global::Serilog.Configuration;
 
 public static class SerilogExtensions

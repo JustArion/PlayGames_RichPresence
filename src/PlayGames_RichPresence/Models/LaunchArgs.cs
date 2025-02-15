@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace Dawn.PlayGames.RichPresence;
+namespace Dawn.PlayGames.RichPresence.Models;
 
 [SuppressMessage("ReSharper", "InvertIf")]
 public struct LaunchArgs

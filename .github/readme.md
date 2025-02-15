@@ -70,6 +70,17 @@ git submodule update
 dotnet publish .\src\PlayGamesRichPresence\ --runtime win-x64 --output ./bin/
 ```
 
+
+**with Auto-Update**
+```ps1
+git clone https://github.com/JustArion/PlayGames_RichPresence && cd "PlayGames_RichPresence"
+git submodule init
+git submodule update
+dotnet publish .\src\PlayGamesRichPresence\ --runtime win-x64 --output ./bin/
+vpk pack -packId 'PlayGames-RichPresence' -v '1.0.0' --outputDir 'velopack' --mainExe 'PlayGames RichPresence.exe' --packDir .\bin\
+echo "Successfully built to 'velopack'"
+```
+
 **Makefile**
 ```ps1
 git clone https://github.com/JustArion/PlayGames_RichPresence && cd "PlayGames_RichPresence"

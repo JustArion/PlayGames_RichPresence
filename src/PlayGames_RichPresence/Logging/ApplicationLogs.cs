@@ -1,7 +1,5 @@
 ﻿namespace Dawn.PlayGames.RichPresence.Logging;
 
-using global::Serilog;
-using global::Serilog.Core;
 using global::Serilog.Events;
 using Serilog.CustomEnrichers;
 using Serilog.Themes;
@@ -75,7 +73,7 @@ internal static class ApplicationLogs
                 (_, _) => Log.Information("Shutting Down...");
             #endif
 
-            Log.Information("Initialized on version {ApplicationVersion}", Application.ProductVersion);
+            Log.Information("Initialized on version {ApplicationVersion}, with arguments: {Arguments}", Application.ProductVersion, Arguments.CommandLine);
         }
         catch (Exception e)
         {

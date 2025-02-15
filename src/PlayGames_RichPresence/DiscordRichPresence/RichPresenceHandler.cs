@@ -1,10 +1,10 @@
 ﻿#define LISTEN_TO_RPCS
+using Dawn.PlayGames.RichPresence.Logging;
 using DiscordRPC.Message;
 
 namespace Dawn.PlayGames.RichPresence.DiscordRichPresence;
 
 using DiscordRPC;
-using global::Serilog;
 using global::Serilog.Core;
 
 public class RichPresenceHandler : IDisposable

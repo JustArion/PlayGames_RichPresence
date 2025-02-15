@@ -6,8 +6,6 @@ using Dawn.Serilog.CustomEnrichers;
 namespace Dawn.PlayGames.RichPresence.PlayGames;
 
 using System.Text;
-using global::Serilog;
-using FileAccess = System.IO.FileAccess;
 
 public class PlayGamesAppSessionMessageReader(string filePath) : IDisposable
 {

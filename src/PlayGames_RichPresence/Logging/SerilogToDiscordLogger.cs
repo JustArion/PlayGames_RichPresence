@@ -1,4 +1,4 @@
-﻿namespace Dawn.PlayGames.RichPresence.DiscordRichPresence;
+﻿namespace Dawn.PlayGames.RichPresence.Logging;
 
 using System.Diagnostics.CodeAnalysis;
 using DiscordRPC.Logging;

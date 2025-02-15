@@ -4,7 +4,6 @@ namespace Dawn.PlayGames.RichPresence.PlayGames;
 
 using System.Globalization;
 using System.Text.RegularExpressions;
-using global::Serilog;
 
 internal static partial class AppSessionInfoBuilder
 {

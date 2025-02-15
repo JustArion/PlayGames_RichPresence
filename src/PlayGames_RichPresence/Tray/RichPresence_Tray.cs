@@ -1,9 +1,8 @@
 ﻿using System.Diagnostics;
+using Dawn.PlayGames.RichPresence.Models;
 
 namespace Dawn.PlayGames.RichPresence.Tray;
 
-using System.Linq.Expressions;
-using global::Serilog;
 using WinForms.ContextMenu;
 
 public class RichPresence_Tray

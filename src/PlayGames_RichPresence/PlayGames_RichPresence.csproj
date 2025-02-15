@@ -15,7 +15,7 @@
   </PropertyGroup>
 
   <PropertyGroup Label="Versioning">
-    <Version>1.3.3</Version>
+    <Version>1.4.0</Version>
 
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <ProductVersion>$Version)</ProductVersion>
@@ -46,6 +46,7 @@
     <PackageReference Include="Vanara.PInvoke.Kernel32" Version="4.0.4" />
     <PackageReference Include="DiscordRichPresence" Version="1.2.1.24" />
     <PackageReference Include="Polly" Version="8.5.2" />
+    <PackageReference Include="Velopack" Version="0.0.1053" />
   </ItemGroup>
 
   <ItemGroup Label="Logs">

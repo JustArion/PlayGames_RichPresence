@@ -1,14 +1,13 @@
 using System.Diagnostics;
-using Dawn.PlayGames.RichPresence.Logging;
-using Dawn.PlayGames.RichPresence.Models;
-using Dawn.PlayGames.RichPresence.PlayGames;
-using Dawn.PlayGames.RichPresence.Tools;
 
 namespace Dawn.PlayGames.RichPresence;
 
+using Logging;
+using Models;
+using PlayGames;
+using Tools;
 using DiscordRichPresence;
 using DiscordRPC;
-using global::Serilog;
 using Tray;
 
 internal static class Program
@@ -24,11 +23,13 @@ internal static class Program
     private static readonly string _devFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), DEV_FILE_PATH);
 
     [STAThread]
-    private static void Main(string[] args)
+    private static async Task Main(string[] args)
     {
         Arguments = new(args);
 
         ApplicationLogs.Initialize();
+
+        await AutoUpdate.Velopack();
 
         SingleInstanceApplication.Ensure();
 
