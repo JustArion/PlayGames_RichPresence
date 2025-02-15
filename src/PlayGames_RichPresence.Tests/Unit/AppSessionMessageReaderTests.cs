@@ -28,6 +28,21 @@ public class AppSessionMessageReaderTests
     }
     
     [Test]
+    public async Task Packages_ShouldNot_Contain_SystemLevelPackages()
+    {
+        // Arrange
+        await using var fileLock = _sut.AquireFileLock();
+
+        // Act
+        var sessionInfos = await _sut.GetAllSessionInfos(fileLock);
+
+        // Assert
+        sessionInfos.Should()
+            .AllSatisfy(x => 
+                AppSessionInfoBuilder.IsSystemLevelPackage(x.PackageName).Should().BeFalse());
+    }
+    
+    [Test]
     public async Task Sessions_ShouldBe_ExpectedAmount()
     {
         // Arrange

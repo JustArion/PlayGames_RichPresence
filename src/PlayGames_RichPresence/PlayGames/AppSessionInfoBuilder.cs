@@ -80,7 +80,7 @@ internal static partial class AppSessionInfoBuilder
     private static string GetValueFromMatch(Match match) => match.Groups[1].Value.Replace("\r", string.Empty);
 
 
-    private static bool IsSystemLevelPackage(string packageName) => SystemLevelPackageHints.Any(packageName.StartsWith);
+    internal static bool IsSystemLevelPackage(string packageName) => SystemLevelPackageHints.Any(packageName.StartsWith);
 
     private static string GetFromGroupNameOpinionated(MatchCollection matches, string groupName)
     {
