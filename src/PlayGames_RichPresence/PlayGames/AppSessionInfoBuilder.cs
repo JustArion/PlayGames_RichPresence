@@ -20,7 +20,7 @@ internal static partial class AppSessionInfoBuilder
         return true;
     }
 
-    private static readonly string[] SystemLevelPackageNames =
+    private static readonly string[] SystemLevelPackageHints =
         [
             "com.android",
             "com.google"
@@ -50,7 +50,7 @@ internal static partial class AppSessionInfoBuilder
             return null;
 
         // We skip system level applications such as com.android.settings (The settings application for the emulator)
-        if (SystemLevelPackageNames.Any(partialPackageName => packageName.StartsWith(partialPackageName)))
+        if (SystemLevelPackageHints.Any(partialPackageName => packageName.StartsWith(partialPackageName)))
         {
             // Log.Verbose("Skipping system level application. {PackageName}", packageName);
             return null;
@@ -64,7 +64,7 @@ internal static partial class AppSessionInfoBuilder
 
         if (!DateTimeOffset.TryParseExact(startedTimestampAsString, AppSessionRegexes.STARTED_TIMESTAMP_FORMAT, null, DateTimeStyles.None , out var startedTimestamp))
         {
-            Log.Warning("Failed to parse started timestamp: {StartedTimestampString}", startedTimestampAsString);
+            Log.Warning("Failed to parse started timestamp: '{StartedTimestampString}' for {Info}", startedTimestampAsString, info);
             return null;
         }
 
@@ -72,7 +72,7 @@ internal static partial class AppSessionInfoBuilder
         if (Enum.TryParse<AppSessionState>(stateAsString, out var appState))
             return new PlayGamesSessionInfo(packageName, startedTimestamp, title, appState) { RawText = info };
 
-        Log.Warning("Failed to parse app state: {AppStateString}", stateAsString);
+        Log.Warning("Failed to parse app state: '{AppStateString}' for {Info}", stateAsString, info);
         return null;
     }
 
@@ -81,9 +81,11 @@ internal static partial class AppSessionInfoBuilder
     // We prefer matches that does not start with 'com.android.launcher'
     private static string GetOpinionatedValueFromMatch(MatchCollection packageNameMatches)
     {
-        return packageNameMatches.FirstOrDefault(x => !x.Value.StartsWith(ANDROID_LAUNCHER_HINT))?.Groups[1].Value
-               ?? packageNameMatches.First().Groups[1].Value;
+        return packageNameMatches.Select(x => x.Groups[1].Value).FirstOrDefault(x => !IsSystemLevelPackage(x)) ??
+            packageNameMatches.First().Groups[1].Value;
     }
+
+    private static bool IsSystemLevelPackage(string packageName) => SystemLevelPackageHints.Any(packageName.StartsWith);
 
     private const string ANDROID_LAUNCHER_HINT = "com.android.launcher";
     public static PlayGamesSessionInfo? BuildFromEmulatorState(string info)
@@ -95,7 +97,7 @@ internal static partial class AppSessionInfoBuilder
         var displayedTaskPackageName = GetOpinionatedValueFromMatch(packageNameMatch);
 
         // We skip system level applications such as com.android.settings (The settings application for the emulator)
-        if (!displayedTaskPackageName.StartsWith(ANDROID_LAUNCHER_HINT) && SystemLevelPackageNames.Any(partialPackageName => displayedTaskPackageName.StartsWith(partialPackageName)))
+        if (IsSystemLevelPackage(displayedTaskPackageName))
         {
             // Log.Verbose("Skipping system level application. {PackageName}", displayedTaskPackageName);
             return null;
@@ -104,9 +106,10 @@ internal static partial class AppSessionInfoBuilder
         if (!TryParseRegex(EmulatorStateRegexes.ForegroundPackageName(), info, out var foregroundPackageName))
             return null;
 
-        var packageName = foregroundPackageName.StartsWith(ANDROID_LAUNCHER_HINT)
+        var packageName = IsSystemLevelPackage(foregroundPackageName)
             ? displayedTaskPackageName
             : foregroundPackageName;
+
 
         if (string.IsNullOrWhiteSpace(packageName) || packageName.StartsWith(ANDROID_LAUNCHER_HINT))
             return null;
