@@ -8,6 +8,8 @@ using global::Serilog;
 
 internal static partial class AppSessionInfoBuilder
 {
+    internal static bool IsSystemLevelPackage(string packageName) => SystemLevelPackageHints.Any(packageName.StartsWith);
+
     private static bool TryParseRegex(Regex regex, string info, out string value)
     {
         var match = regex.Match(info);
@@ -20,6 +22,8 @@ internal static partial class AppSessionInfoBuilder
         value = GetValueFromMatch(match);
         return true;
     }
+    private static string GetValueFromMatch(Match match) => match.Groups[1].Value.Replace("\r", string.Empty);
+
 
     private static readonly string[] SystemLevelPackageHints =
         [
@@ -77,17 +81,15 @@ internal static partial class AppSessionInfoBuilder
         return null;
     }
 
-    private static string GetValueFromMatch(Match match) => match.Groups[1].Value.Replace("\r", string.Empty);
 
 
-    internal static bool IsSystemLevelPackage(string packageName) => SystemLevelPackageHints.Any(packageName.StartsWith);
 
-    private static string GetFromGroupNameOpinionated(MatchCollection matches, string groupName)
+    private static string GetPrioritizedValue(MatchCollection matches, Func<Match, bool> predicate)
     {
-        var nonSystemPackage = matches.FirstOrDefault(x => !IsSystemLevelPackage(x.Groups[groupName].Value));
+        var nonSystemPackage = matches.FirstOrDefault(predicate);
         return nonSystemPackage == null
-            ? matches.First().Groups[groupName].Value
-            : nonSystemPackage.Groups[groupName].Value;
+            ? GetValueFromMatch(matches.First())
+            : GetValueFromMatch(nonSystemPackage);
     }
 
     private const string ANDROID_LAUNCHER_HINT = "com.android.launcher";
@@ -98,7 +100,7 @@ internal static partial class AppSessionInfoBuilder
             return null;
 
         // We prefer matches that are not System Level Packages
-        var taskPackageName = GetFromGroupNameOpinionated(packageNameMatch, "TaskPackageName");
+        var taskPackageName = GetPrioritizedValue(packageNameMatch, x => !IsSystemLevelPackage(GetValueFromMatch(x)));
 
         // We skip system level applications such as com.android.settings (The settings application for the emulator)
         if (IsSystemLevelPackage(taskPackageName))
@@ -149,6 +151,9 @@ internal static partial class AppSessionInfoBuilder
             startedTimestamp = startedTimestamp.ToUniversalTime();
         }
 
+        // Since we can't accurately get the window Title anymore on the dev version
+        // We settle for the package name title
+        // This will be further cleaned up by the web scraper if successful
         var title = packageName.Split('.').Last();
 
         return new PlayGamesSessionInfo(packageName, startedTimestamp, title, appState)
