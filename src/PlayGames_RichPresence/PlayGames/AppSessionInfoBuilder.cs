@@ -31,17 +31,17 @@ internal static partial class AppSessionInfoBuilder
                                                        // 9/24/2024 1:05:02 PM +00:00
         internal const string STARTED_TIMESTAMP_FORMAT = "M/d/yyyy h:mm:ss tt zzz";
 
-        [GeneratedRegex("package_name=(.+?)$", RegexOptions.Multiline)]
+        [GeneratedRegex("package_name=(?'PackageName'.+?)$", RegexOptions.Multiline)]
         internal static partial Regex PackageNameRegex(); // package_name=com.YoStarEN.Arknights
 
-        [GeneratedRegex("title=(.+?)$", RegexOptions.Multiline)]
+        [GeneratedRegex("title=(?'Title'.+?)$", RegexOptions.Multiline)]
         internal static partial Regex TitleRegex(); // title=Arknights
 
         // This is UTC
-        [GeneratedRegex("started_timestamp=(.+?)$", RegexOptions.Multiline)]
+        [GeneratedRegex("started_timestamp=(?'StartTimestamp'.+?)$", RegexOptions.Multiline)]
         internal static partial Regex StartedTimestampRegex(); // started_timestamp=9/24/2024 1:05:02 PM +00:00
 
-        [GeneratedRegex("state=(.+?)=", RegexOptions.Multiline)]
+        [GeneratedRegex("state=(?'AppSessionState'.+?)=", RegexOptions.Multiline)]
         internal static partial Regex AppSessionStateRegex(); // state=Running={ }
     }
     public static PlayGamesSessionInfo? BuildFromAppSession(string info)
@@ -78,14 +78,16 @@ internal static partial class AppSessionInfoBuilder
 
     private static string GetValueFromMatch(Match match) => match.Groups[1].Value.Replace("\r", string.Empty);
 
-    // We prefer matches that does not start with 'com.android.launcher'
-    private static string GetOpinionatedValueFromMatch(MatchCollection packageNameMatches)
-    {
-        return packageNameMatches.Select(x => x.Groups[1].Value).FirstOrDefault(x => !IsSystemLevelPackage(x)) ??
-            packageNameMatches.First().Groups[1].Value;
-    }
 
     private static bool IsSystemLevelPackage(string packageName) => SystemLevelPackageHints.Any(packageName.StartsWith);
+
+    private static string GetFromGroupNameOpinionated(MatchCollection matches, string groupName)
+    {
+        var nonSystemPackage = matches.FirstOrDefault(x => !IsSystemLevelPackage(x.Groups[groupName].Value));
+        return nonSystemPackage == null
+            ? matches.First().Groups[groupName].Value
+            : nonSystemPackage.Groups[groupName].Value;
+    }
 
     private const string ANDROID_LAUNCHER_HINT = "com.android.launcher";
     public static PlayGamesSessionInfo? BuildFromEmulatorState(string info)
@@ -94,24 +96,22 @@ internal static partial class AppSessionInfoBuilder
         if (packageNameMatch.Count == 0)
             return null;
 
-        var displayedTaskPackageName = GetOpinionatedValueFromMatch(packageNameMatch);
+        // We prefer matches that are not System Level Packages
+        var taskPackageName = GetFromGroupNameOpinionated(packageNameMatch, "TaskPackageName");
 
         // We skip system level applications such as com.android.settings (The settings application for the emulator)
-        if (IsSystemLevelPackage(displayedTaskPackageName))
-        {
-            // Log.Verbose("Skipping system level application. {PackageName}", displayedTaskPackageName);
+        if (IsSystemLevelPackage(taskPackageName))
             return null;
-        }
 
         if (!TryParseRegex(EmulatorStateRegexes.ForegroundPackageName(), info, out var foregroundPackageName))
             return null;
 
         var packageName = IsSystemLevelPackage(foregroundPackageName)
-            ? displayedTaskPackageName
+            ? taskPackageName
             : foregroundPackageName;
 
 
-        if (string.IsNullOrWhiteSpace(packageName) || packageName.StartsWith(ANDROID_LAUNCHER_HINT))
+        if (string.IsNullOrWhiteSpace(packageName))
             return null;
 
         if (!TryParseRegex(EmulatorStateRegexes.StartedTimestampRegex(), info, out var startedTimestampAsString))
@@ -123,7 +123,9 @@ internal static partial class AppSessionInfoBuilder
 
         var appState = AppSessionState.None;
 
-        if (foregroundPackageName.StartsWith(ANDROID_LAUNCHER_HINT) || displayedTaskPackageName.StartsWith(ANDROID_LAUNCHER_HINT))
+        // I don't remember why we checked for this, this may very well be redundant as taskPackageName is guaranteed not to start with the system level thing.
+        // :shrug:
+        if (foregroundPackageName.StartsWith(ANDROID_LAUNCHER_HINT) || taskPackageName.StartsWith(ANDROID_LAUNCHER_HINT))
             appState = foregroundPackageName.StartsWith(ANDROID_LAUNCHER_HINT)
                 ? AppSessionState.Stopped
                 : AppSessionState.Starting;
@@ -159,19 +161,19 @@ internal static partial class AppSessionInfoBuilder
                                                        // 250207 18:00:04.030+1
         internal const string STARTED_TIMESTAMP_FORMAT = "yyMMdd HH:mm:ss.fffz";
 
-        [GeneratedRegex("foreground_task=(.+?) }", RegexOptions.Multiline)]
+        [GeneratedRegex("foreground_task=(?'ForegroundPackageName'.+?) }", RegexOptions.Multiline)]
         internal static partial Regex ForegroundPackageName(); // foreground_task=com.YoStarEN.Arknights }
 
-        [GeneratedRegex("task=(.+?), ", RegexOptions.Multiline)]
+        [GeneratedRegex("task=(?'TaskPackageName'.+?), ", RegexOptions.Multiline)]
         internal static partial Regex DisplayedTaskPackageName(); //       { display_id=0, task=com.YoStarEN.Arknights, foreground=True },
 
-        [GeneratedRegex(@"^(.+?\+\d) ", RegexOptions.Multiline)]
+        [GeneratedRegex(@"^(?'Timestamp'.+?\+\d) ", RegexOptions.Multiline)]
         internal static partial Regex StartedTimestampRegex(); // 250207 18:00:04.030+1 39 INFO  EmulatorStateLogger: Emulator state updated:
 
         // status=Running
         // Stopping (Emulator stopped normally (shutdown)) - lastKnownHealthStatus=No ERROR; emulator is healthy
 
-        [GeneratedRegex("status=(.+?)(?= |$)", RegexOptions.Multiline)]
+        [GeneratedRegex("status=(?'AppSessionState'.+?)(?= |$)", RegexOptions.Multiline)]
         internal static partial Regex AppSessionStateRegex();
     }
 
