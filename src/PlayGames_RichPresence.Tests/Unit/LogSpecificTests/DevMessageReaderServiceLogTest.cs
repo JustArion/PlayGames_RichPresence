@@ -2,10 +2,9 @@
 
 using Dawn.PlayGames.RichPresence.Models;
 using Dawn.PlayGames.RichPresence.PlayGames;
-using FluentAssertions;
 
 [TestFixture(TestOf = typeof(PlayGamesAppSessionMessageReader))]
-public class DevAppSessionMessageReaderTests
+public class DevLogSpecificMessageReaderTests
 {
     [SetUp]
     public void SetUp()
@@ -19,27 +18,6 @@ public class DevAppSessionMessageReaderTests
     public void Cleanup()
     {
         _sut.Dispose();
-    }
-    
-    [Test]
-    public async Task Packages_ShouldNot_Contain_SystemLevelPackages()
-    {
-        // Arrange
-        await using var fileLock = _sut.AquireFileLock();
-
-        // Act
-        var sessionInfos = await _sut.GetAllSessionInfos(fileLock);
-
-        // Assert
-        sessionInfos.Should()
-            .AllSatisfy(x => 
-                AppSessionInfoBuilder.IsSystemLevelPackage(x.PackageName).Should().BeFalse());
-    }
-
-    [Test]
-    public async Task ShouldGet_FileLock()
-    {
-        await using var fileLock = _sut.AquireFileLock();
     }
     
     [Test]

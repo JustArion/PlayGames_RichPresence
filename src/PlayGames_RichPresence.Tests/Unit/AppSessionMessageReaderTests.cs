@@ -2,109 +2,45 @@
 
 using Dawn.PlayGames.RichPresence.Models;
 using Dawn.PlayGames.RichPresence.PlayGames;
-using FluentAssertions;
 
 [TestFixture(TestOf = typeof(PlayGamesAppSessionMessageReader))]
 public class AppSessionMessageReaderTests
 {
-    [SetUp]
-    public void SetUp()
-    {
-        _sut = new PlayGamesAppSessionMessageReader("Assets/Service.log");
-    }
-    private PlayGamesAppSessionMessageReader _sut;
-
+    private static readonly PlayGamesAppSessionMessageReader[] _readers = 
+    [
+        new("Assets/Service.log"),
+        new("Assets/Additional/Service.1.log"),
+        new("Assets/Service - Developer.log"),
+        new("Assets/Additional/Service.dev.1.log")
+    ];
 
     [TearDown]
     public void Cleanup()
     {
-        _sut.Dispose();
+        foreach (var reader in _readers)
+            reader.Dispose();
     }
 
     [Test]
-    public async Task ShouldGet_FileLock()
+    [TestCaseSource(nameof(_readers))]
+    public async Task ShouldGet_FileLock(PlayGamesAppSessionMessageReader sut)
     {
-        await using var fileLock = _sut.AquireFileLock();
+        await using var fileLock = sut.AquireFileLock();
     }
     
     [Test]
-    public async Task Packages_ShouldNot_Contain_SystemLevelPackages()
+    [TestCaseSource(nameof(_readers))]
+    public async Task Packages_ShouldNot_Contain_SystemLevelPackages(PlayGamesAppSessionMessageReader sut)
     {
         // Arrange
-        await using var fileLock = _sut.AquireFileLock();
+        await using var fileLock = sut.AquireFileLock();
 
         // Act
-        var sessionInfos = await _sut.GetAllSessionInfos(fileLock);
+        var sessionInfos = await sut.GetAllSessionInfos(fileLock);
 
         // Assert
         sessionInfos.Should()
             .AllSatisfy(x => 
                 AppSessionInfoBuilder.IsSystemLevelPackage(x.PackageName).Should().BeFalse());
     }
-    
-    [Test]
-    public async Task Sessions_ShouldBe_ExpectedAmount()
-    {
-        // Arrange
-        await using var fileLock = _sut.AquireFileLock();
-        
-        // Act
-        var sessionInfos = await _sut.GetAllSessionInfos(fileLock);
-
-        // Assert
-        sessionInfos.Count.Should().Be(321);
-    }
-
-    [Test]
-    public async Task FirstSession_ShouldBe_DefenseDerby()
-    {
-        // Arrange
-        await using var fileLock = _sut.AquireFileLock();
-        
-        // Act
-        var sessionInfos = await _sut.GetAllSessionInfos(fileLock);
-
-        // Assert
-        sessionInfos.Should().HaveCountGreaterThanOrEqualTo(1);
-
-        var first = sessionInfos[0];
-
-        first.Title.Should().Be("Defense Derby");
-        first.PackageName.Should().Be("com.krafton.defensederby");
-        first.AppState.Should().Be(AppSessionState.Starting);
-    }
-    
-    [Test]
-    public async Task LastSession_ShouldBe_StoppedArknights()
-    {
-        // Arrange
-        await using var fileLock = _sut.AquireFileLock();
-        
-        // Act
-        var sessionInfos = await _sut.GetAllSessionInfos(fileLock);
-
-        // Assert
-        sessionInfos.Should().HaveCountGreaterThanOrEqualTo(1);
-        
-        var last = sessionInfos[^1];
-
-        last.Title.Should().Be("Arknights");
-        last.PackageName.Should().Be("com.YoStarEN.Arknights");
-        last.AppState.Should().Be(AppSessionState.Stopped);
-    }
-    
-    [Test]
-    public async Task StartingSessions_ShouldHave_NoStartTime()
-    {
-        // Arrange
-        await using var fileLock = _sut.AquireFileLock();
-        
-        // Act
-        var sessionInfos = (await _sut.GetAllSessionInfos(fileLock))
-            .Where(x => x.AppState == AppSessionState.Starting);
-
-        // Assert
-        sessionInfos.Should().AllSatisfy(x => x.StartTime.Should().BeExactly(TimeSpan.Zero));
-    } 
-
 }
