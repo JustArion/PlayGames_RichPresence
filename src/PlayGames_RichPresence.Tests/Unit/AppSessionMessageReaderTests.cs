@@ -51,7 +51,7 @@ public class AppSessionMessageReaderTests
 
         // Assert
         sessionInfos.Should().HaveCountGreaterThanOrEqualTo(1);
-        
+
         var first = sessionInfos[0];
 
         first.Title.Should().Be("Defense Derby");
@@ -89,7 +89,7 @@ public class AppSessionMessageReaderTests
             .Where(x => x.AppState == AppSessionState.Starting);
 
         // Assert
-        sessionInfos.Should().AllSatisfy(x => x.StartTime.Should().BeExactly(default));
+        sessionInfos.Should().AllSatisfy(x => x.StartTime.Should().BeExactly(TimeSpan.Zero));
     } 
 
 }
