@@ -65,6 +65,8 @@ Enabling `Run on Startup` clones the current launch arguments and runs it as tha
 **Manual**
 ```ps1
 git clone https://github.com/JustArion/PlayGames_RichPresence && cd "PlayGames_RichPresence"
+git submodule init
+git submodule update
 dotnet publish .\src\PlayGamesRichPresence\ --runtime win-x64 --output ./bin/
 ```
 
