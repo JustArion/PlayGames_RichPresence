@@ -1,8 +1,6 @@
 ﻿namespace PlayGames_RichPresence.Tests.Unit;
 
-using System.Web;
 using Dawn.PlayGames.RichPresence.PlayGames;
-using FluentAssertions;
 
 [TestFixture(TestOf = typeof(PlayGamesWebScraper))]
 public class WebScraperTests
