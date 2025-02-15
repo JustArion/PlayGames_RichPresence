@@ -1,4 +1,5 @@
 > [!NOTE]
+> - The project has a [sister-repo](https://github.com/JustArion/MuMu_RichPresence) for `MuMu Player`
 > - Additional options available in the Tray Icon
 > - Play Games Developer Emulator is also supported
 
