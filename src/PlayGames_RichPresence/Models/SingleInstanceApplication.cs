@@ -3,7 +3,7 @@ using System.Reflection;
 using System.Text;
 using Serilog;
 
-namespace Dawn.PlayGames.RichPresence;
+namespace Dawn.PlayGames.RichPresence.Models;
 
 public static class SingleInstanceApplication
 {

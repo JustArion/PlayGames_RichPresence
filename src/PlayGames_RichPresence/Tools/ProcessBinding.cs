@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace Dawn.PlayGames.RichPresence;
+namespace Dawn.PlayGames.RichPresence.Tools;
 
 internal sealed class ProcessBinding : IDisposable
 {

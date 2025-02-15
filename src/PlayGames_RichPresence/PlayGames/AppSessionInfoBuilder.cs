@@ -1,8 +1,9 @@
-﻿namespace Dawn.PlayGames.RichPresence.PlayGames;
+﻿using Dawn.PlayGames.RichPresence.Models;
+
+namespace Dawn.PlayGames.RichPresence.PlayGames;
 
 using System.Globalization;
 using System.Text.RegularExpressions;
-using Domain;
 using global::Serilog;
 
 internal static partial class AppSessionInfoBuilder

@@ -1,12 +1,13 @@
 using System.Diagnostics;
 using Dawn.PlayGames.RichPresence.Logging;
+using Dawn.PlayGames.RichPresence.Models;
 using Dawn.PlayGames.RichPresence.PlayGames;
+using Dawn.PlayGames.RichPresence.Tools;
 
 namespace Dawn.PlayGames.RichPresence;
 
 using DiscordRichPresence;
 using DiscordRPC;
-using Domain;
 using global::Serilog;
 using Tray;
 

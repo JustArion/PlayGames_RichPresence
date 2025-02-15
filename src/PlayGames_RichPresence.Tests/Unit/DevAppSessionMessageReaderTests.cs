@@ -1,6 +1,6 @@
 ﻿namespace PlayGames_RichPresence.Tests.Unit;
 
-using Dawn.PlayGames.RichPresence.Domain;
+using Dawn.PlayGames.RichPresence.Models;
 using Dawn.PlayGames.RichPresence.PlayGames;
 using FluentAssertions;
 

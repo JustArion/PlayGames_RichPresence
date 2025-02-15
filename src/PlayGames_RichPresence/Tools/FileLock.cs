@@ -1,6 +1,6 @@
 ﻿using FileAccess = System.IO.FileAccess;
 
-namespace Dawn.PlayGames.RichPresence.PlayGames.FileOperations;
+namespace Dawn.PlayGames.RichPresence.PlayGames.Tools;
 
 internal sealed class FileLock : IAsyncDisposable
 {

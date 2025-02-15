@@ -1,4 +1,4 @@
-﻿namespace Dawn.PlayGames.RichPresence.Domain;
+﻿namespace Dawn.PlayGames.RichPresence.Models;
 
 public enum AppSessionState
 {

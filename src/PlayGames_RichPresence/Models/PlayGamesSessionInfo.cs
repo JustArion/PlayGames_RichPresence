@@ -1,4 +1,4 @@
-﻿namespace Dawn.PlayGames.RichPresence.Domain;
+﻿namespace Dawn.PlayGames.RichPresence.Models;
 
 public record PlayGamesSessionInfo(string PackageName, DateTimeOffset StartTime, string Title, AppSessionState AppState)
 {

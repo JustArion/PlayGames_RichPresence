@@ -1,6 +1,6 @@
 ﻿// #define LOG_APP_SESSION_MESSAGES
-using Dawn.PlayGames.RichPresence.Domain;
-using Dawn.PlayGames.RichPresence.PlayGames.FileOperations;
+using Dawn.PlayGames.RichPresence.Models;
+using Dawn.PlayGames.RichPresence.PlayGames.Tools;
 using Dawn.Serilog.CustomEnrichers;
 
 namespace Dawn.PlayGames.RichPresence.PlayGames;
