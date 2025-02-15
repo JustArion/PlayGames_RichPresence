@@ -1,8 +1,12 @@
 ﻿install_velopack:
 	dotnet tool update -g vpk
 
-velopack: build
+velopack: clean build
 	vpk pack -u 'PlayGames-RichPresence' -v '1.4.0' -e 'PlayGames RichPresence.exe' -o 'velopack' --packTitle 'Play Games - Rich Presence' -p 'bin'
+
+clean:
+	del /s /q bin
+	del /s /q velopack
 
 build:
 	git submodule init
