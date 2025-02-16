@@ -2,7 +2,7 @@
 	dotnet tool update -g vpk
 
 velopack: clean build
-	vpk pack -u 'PlayGames-RichPresence' -v '1.4.0' -e 'PlayGames RichPresence Standalone.exe' -o 'velopack' --packTitle 'Play Games - Rich Presence' -p 'bin'
+	vpk pack -u 'PlayGames-RichPresence' -v '1.4.1' -e 'PlayGames RichPresence Standalone.exe' -o 'velopack' --packTitle 'Play Games - Rich Presence' -p 'bin' --shortcuts 'StartMenuRoot'
 
 clean:
 	del /s /q bin
