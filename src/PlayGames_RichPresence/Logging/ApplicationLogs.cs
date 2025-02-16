@@ -1,4 +1,6 @@
-﻿namespace Dawn.PlayGames.RichPresence.Logging;
+﻿using System.Runtime.Versioning;
+
+namespace Dawn.PlayGames.RichPresence.Logging;
 
 using global::Serilog.Events;
 using Serilog.CustomEnrichers;
@@ -6,30 +8,33 @@ using Serilog.Themes;
 
 internal static class ApplicationLogs
 {
+    static ApplicationLogs()
+    {
+        AttachParent();
+
+        if (Console.IsOutputRedirected)
+            return;
+
+        var stdout = new StreamWriter(Console.OpenStandardOutput()) { AutoFlush = true };
+        Console.SetOut(stdout);
+    }
+
     private const string LOGGING_FORMAT =
         "{Level:u1} {Timestamp:yyyy-MM-dd HH:mm:ss.ffffff}   [{Source}] {Message:lj}{NewLine}{Exception}";
 
     #if RELEASE
     private const string DEFAULT_SEQ_URL = "http://localhost:9999";
     #endif
-    private static bool _initialized;
 
-    public static void Initialize()
+    [SupportedOSPlatform("windows")]
+    private static void AttachParent()
     {
-        if (_initialized)
-            return;
-
-        _initialized = true;
-
         if (AttachConsole(ATTACH_PARENT_PROCESS))
             Console.WriteLine("[*] Attached Console to Parent");
+    }
 
-        if (!Console.IsOutputRedirected)
-        {
-            var stdout = new StreamWriter(Console.OpenStandardOutput()) { AutoFlush = true };
-            Console.SetOut(stdout);
-        }
-
+    public static void Initialize(bool writeToParent)
+    {
         try
         {
             var config = new LoggerConfiguration()
@@ -40,8 +45,11 @@ internal static class ApplicationLogs
                 .WriteTo.Console(outputTemplate: LOGGING_FORMAT, theme: BlizzardTheme.GetTheme,
                     applyThemeToRedirectedOutput: true, standardErrorFromLevel: LogEventLevel.Error);
 
-                if (!Arguments.NoFileLogging)
-                    config.WriteTo.File(Path.Combine(AppContext.BaseDirectory, $"{Application.ProductName}.log"),
+            if (!Arguments.NoFileLogging)
+                config.WriteTo.File(
+                    writeToParent
+                        ? Path.Combine(AppContext.BaseDirectory, $"{Application.ProductName}.log")
+                        : Path.Combine(Directory.GetParent(".")!.FullName, $"{Application.ProductName}.log"),
                     outputTemplate: LOGGING_FORMAT,
                     restrictedToMinimumLevel: Arguments.ExtendedLogging
                         ? LogEventLevel.Verbose
@@ -49,10 +57,8 @@ internal static class ApplicationLogs
                     buffered: true,
                     retainedFileCountLimit: 1,
                     rollOnFileSizeLimit: true,
-                    fileSizeLimitBytes: (long)Math.Pow(1024, 2) * 20, // 20mb
-                    flushToDiskInterval: TimeSpan.FromSeconds(1));
-
-
+                    fileSizeLimitBytes: (long)Math.Pow(1024, 2) * 20, flushToDiskInterval // 20mb
+                    : TimeSpan.FromSeconds(1));
 
             #if RELEASE
             // This is personal preference, but you can set your Seq server to catch :9999 too.
@@ -64,16 +70,6 @@ internal static class ApplicationLogs
             #endif
 
             Log.Logger = config.CreateLogger();
-
-            AppDomain.CurrentDomain.UnhandledException +=
-                (_, eo) => Log.Fatal(eo.ExceptionObject as Exception, "Unhandled Exception");
-
-            #if !DEBUG
-            AppDomain.CurrentDomain.ProcessExit +=
-                (_, _) => Log.Information("Shutting Down...");
-            #endif
-
-            Log.Information("Initialized on version {ApplicationVersion}, with arguments: {Arguments}", Application.ProductVersion, Arguments.CommandLine);
         }
         catch (Exception e)
         {
@@ -81,5 +77,18 @@ internal static class ApplicationLogs
             // Setting a null logger prevents exceptions when other places within the code tries to log when setting up the logger has failed already.
             Log.Logger = new NullLogger();
         }
+    }
+
+    internal static void ListenToEvents()
+    {
+        AppDomain.CurrentDomain.UnhandledException +=
+            (_, eo) => Log.Fatal(eo.ExceptionObject as Exception, "Unhandled Exception");
+
+            #if !DEBUG
+            AppDomain.CurrentDomain.ProcessExit +=
+                (_, _) => Log.Information("Shutting Down...");
+            #endif
+
+        Log.Information("Initialized on version {ApplicationVersion}", Application.ProductVersion);
     }
 }
