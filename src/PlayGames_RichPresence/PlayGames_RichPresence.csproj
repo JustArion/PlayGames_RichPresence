@@ -9,7 +9,7 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
     <!--    Don't change this without changing the same in the Makefile and readme.md -->
-    <AssemblyName>PlayGames RichPresence - Standalone</AssemblyName>
+    <AssemblyName>PlayGames RichPresence Standalone</AssemblyName>
     <RootNamespace>Dawn.PlayGames.RichPresence</RootNamespace>
     <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
     <Company>https://github.com/JustArion</Company>
