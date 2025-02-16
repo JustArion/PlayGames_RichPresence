@@ -14,6 +14,9 @@
         - Reads a single registry key (`\HKCU\Software\Microsoft\Windows\CurrentVersion\Run\PlayGames RichPresence`)
             - Run on Startup
 - `Network`
+    - `Download Access`
+        - _Can_ download updates from `https://github.com/JustArion/PlayGames_RichPresence`
+        - Accesses the site `https://play.google.com/store/apps/details?id=`
     - `Upload Access`
         - Sends telemetry (`http://localhost:9999`)
             - Configurable by the user / command line, Handled by Nuget package [Serilog.Sinks.Seq](https://www.nuget.org/packages/Serilog.Sinks.Seq) & external application ([Seq](https://datalust.co/seq))
