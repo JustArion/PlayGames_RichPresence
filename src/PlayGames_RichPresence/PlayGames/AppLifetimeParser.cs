@@ -5,7 +5,7 @@ namespace Dawn.PlayGames.RichPresence.PlayGames;
 using System.Globalization;
 using System.Text.RegularExpressions;
 
-internal static partial class AppSessionInfoBuilder
+internal static partial class AppLifetimeParser
 {
     internal static bool IsSystemLevelPackage(string packageName) => SystemLevelPackageHints.Any(packageName.StartsWith);
 

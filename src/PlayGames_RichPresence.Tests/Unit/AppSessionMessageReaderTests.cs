@@ -41,6 +41,6 @@ public class AppSessionMessageReaderTests
         // Assert
         sessionInfos.Should()
             .AllSatisfy(x => 
-                AppSessionInfoBuilder.IsSystemLevelPackage(x.PackageName).Should().BeFalse());
+                AppLifetimeParser.IsSystemLevelPackage(x.PackageName).Should().BeFalse());
     }
 }

@@ -159,13 +159,13 @@ public class PlayGamesAppSessionMessageReader(string filePath) : IDisposable
             if (line.Contains("AppSessionModule: sessions updated:"))
             {
                 var appSessionMessage = await ExtractLogEntry(reader, line);
-                sessionInfo = AppSessionInfoBuilder.BuildFromAppSession(appSessionMessage);
+                sessionInfo = AppLifetimeParser.BuildFromAppSession(appSessionMessage);
 
             }
             else if (line.Contains("Emulator state updated:"))
             {
                 var appSessionMessage = await ExtractLogEntry(reader, line);
-                sessionInfo = AppSessionInfoBuilder.BuildFromEmulatorState(appSessionMessage);
+                sessionInfo = AppLifetimeParser.BuildFromEmulatorState(appSessionMessage);
             }
 
             if (sessionInfo == null)
@@ -188,7 +188,7 @@ public class PlayGamesAppSessionMessageReader(string filePath) : IDisposable
             // This delay is needed to let the GPG finish writing the entry to the file as its a multi-line log
             await Task.Delay(TimeSpan.FromMilliseconds(100));
             var appSessionMessage = await ExtractLogEntry(reader, line, false);
-            sessionInfo = AppSessionInfoBuilder.BuildFromAppSession(appSessionMessage);
+            sessionInfo = AppLifetimeParser.BuildFromAppSession(appSessionMessage);
 
         }
         else if (line.Contains("Emulator state updated:"))
@@ -197,7 +197,7 @@ public class PlayGamesAppSessionMessageReader(string filePath) : IDisposable
             await Task.Delay(TimeSpan.FromMilliseconds(100));
 
             var appSessionMessage = await ExtractLogEntry(reader, line, false);
-            sessionInfo = AppSessionInfoBuilder.BuildFromEmulatorState(appSessionMessage);
+            sessionInfo = AppLifetimeParser.BuildFromEmulatorState(appSessionMessage);
         }
 
         if (sessionInfo == null)
