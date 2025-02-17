@@ -189,7 +189,8 @@ internal static class Program
                     LargeImageKey = iconUrl
                 };
         }
-
+        presence.Assets.LargeImageText = presence.Details;
+        
         _richPresenceHandler.SetPresence(presence);
         _currentPresence = presence;
     }
