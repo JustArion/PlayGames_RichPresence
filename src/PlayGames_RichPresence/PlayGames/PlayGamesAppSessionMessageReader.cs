@@ -78,9 +78,8 @@ public class PlayGamesAppSessionMessageReader(string filePath) : IDisposable
         else
             Log.Verbose("Caught up, no games are currently running (Processed {EventsProcessed} events)", sessions.Count);
 
-        Log.Debug("CatchUp: Stream position is currently at {Position}", reader.BaseStream.Position);
-        Log.Debug("CatchUp: Read {Lines} lines", _initialLinesRead);
-        Log.Debug("CatchUp: File Size is currently {FileSizeMb} MB", Math.Round(reader.BaseStream.Length / Math.Pow(1024, 2), 0));
+        Log.Debug("CatchUp: Read {Lines} lines ({FileSize} mb)[{Position}]", _initialLinesRead,
+            Math.Round(reader.BaseStream.Length / Math.Pow(1024, 2), 0), reader.BaseStream.Position);
     }
 
     private void LogFileWatcherOnError(object? _, ErrorEventArgs e) => _logger.Error(e.GetException(), "File watcher error");
