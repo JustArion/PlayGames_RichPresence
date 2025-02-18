@@ -12,6 +12,15 @@
           "Newtonsoft.Json": "13.0.1"
         }
       },
+      "DynamicData": {
+        "type": "Direct",
+        "requested": "[9.1.2, )",
+        "resolved": "9.1.2",
+        "contentHash": "KMomv26cewTHkHENVKEajxM4EaFJw6fwXGsrdlncq5cdJGnWBHYMTRMuu7y2vbbyb8/VdxkYHlDwZa8mupDrww==",
+        "dependencies": {
+          "System.Reactive": "6.0.1"
+        }
+      },
       "Microsoft.NET.ILLink.Tasks": {
         "type": "Direct",
         "requested": "[8.0.13, )",
@@ -185,6 +194,11 @@
         "type": "Transitive",
         "resolved": "9.0.0",
         "contentHash": "eA3cinogwaNB4jdjQHOP3Z3EuyiDII7MT35jgtnsA4vkn0LUrrSHsU0nzHTzFzmaFYeKV7MYyMxOocFzsBHpTw=="
+      },
+      "System.Reactive": {
+        "type": "Transitive",
+        "resolved": "6.0.1",
+        "contentHash": "rHaWtKDwCi9qJ3ObKo8LHPMuuwv33YbmQi7TcUK1C264V3MFnOr5Im7QgCTdLniztP3GJyeiSg5x8NqYJFqRmg=="
       },
       "System.Security.AccessControl": {
         "type": "Transitive",

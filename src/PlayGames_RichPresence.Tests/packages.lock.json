@@ -57,6 +57,14 @@
           "Newtonsoft.Json": "13.0.1"
         }
       },
+      "DynamicData": {
+        "type": "Transitive",
+        "resolved": "9.1.2",
+        "contentHash": "KMomv26cewTHkHENVKEajxM4EaFJw6fwXGsrdlncq5cdJGnWBHYMTRMuu7y2vbbyb8/VdxkYHlDwZa8mupDrww==",
+        "dependencies": {
+          "System.Reactive": "6.0.1"
+        }
+      },
       "Microsoft.CodeCoverage": {
         "type": "Transitive",
         "resolved": "17.8.0",
@@ -256,6 +264,11 @@
         "resolved": "9.0.0",
         "contentHash": "eA3cinogwaNB4jdjQHOP3Z3EuyiDII7MT35jgtnsA4vkn0LUrrSHsU0nzHTzFzmaFYeKV7MYyMxOocFzsBHpTw=="
       },
+      "System.Reactive": {
+        "type": "Transitive",
+        "resolved": "6.0.1",
+        "contentHash": "rHaWtKDwCi9qJ3ObKo8LHPMuuwv33YbmQi7TcUK1C264V3MFnOr5Im7QgCTdLniztP3GJyeiSg5x8NqYJFqRmg=="
+      },
       "System.Reflection.Metadata": {
         "type": "Transitive",
         "resolved": "1.6.0",
@@ -346,6 +359,7 @@
         "dependencies": {
           "Dawn.WinForms.ContextMenu": "[1.0.0, )",
           "DiscordRichPresence": "[1.2.1.24, )",
+          "DynamicData": "[9.1.2, )",
           "Microsoft.Win32.Registry": "[5.0.0, )",
           "Polly": "[8.5.2, )",
           "Serilog": "[4.2.0, )",
