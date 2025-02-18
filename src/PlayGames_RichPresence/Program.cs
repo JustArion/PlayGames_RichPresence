@@ -103,14 +103,25 @@ internal static class Program
     private static AppSessionState _currentAppState;
     private static async ValueTask SetPresenceFromSessionInfoAsync(PlayGamesSessionInfo sessionInfo)
     {
+        var currentState = _currentAppState;
         if (_currentAppState == sessionInfo.AppState)
             return;
+
+
 
         if (Process.GetProcessesByName("crosvm").Length == 0)
         {
             Log.Debug("Emulator is not running, likely a log-artifact, crosvm.exe ({SessionTitle})", sessionInfo.Title);
             return;
         }
+
+        // There's a missing state here, it should be Starting -> Running -> Stopping -> Stopped
+        if (_currentAppState == AppSessionState.Stopping && sessionInfo.AppState == AppSessionState.Running)
+            return;
+
+        _currentAppState = sessionInfo.AppState;
+        Log.Information("App State Changed from {PreviousAppState} -> {CurrentAppState} | {Timestamp}", currentState, sessionInfo.AppState, sessionInfo.StartTime);
+
 
         // This is a bit of a loaded if statement. Let me break it down a bit
         // If the state went from Starting -> Started we don't do anything
@@ -129,14 +140,10 @@ internal static class Program
             }, _cts.Token);
         }
 
-
-
-        Log.Information("App State Changed from {PreviousAppState} -> {CurrentAppState} | {Timestamp}", _currentAppState, sessionInfo.AppState, sessionInfo.StartTime);
-        _currentAppState = sessionInfo.AppState;
-
         switch (sessionInfo.AppState)
         {
             case AppSessionState.Starting:
+                Log.Debug("Setting Rich Presence as {Title}(Starting Up)", sessionInfo.Title);
                 await SetPresenceFor(sessionInfo, new()
                 {
                     Assets = new()
@@ -146,12 +153,16 @@ internal static class Program
                 });
                 break;
             case AppSessionState.Running:
+                Log.Debug("Setting Rich Presence as {Title}(Running)", sessionInfo.Title);
                 await SetPresenceFor(sessionInfo, new()
                 {
                     Timestamps = new Timestamps(sessionInfo.StartTime.DateTime)
                 });
                 break;
             case AppSessionState.Stopping or AppSessionState.Stopped:
+                if (!HasRichPresence())
+                    return;
+
                 await _cts.CancelAsync();
                 ClearPresenceFor(sessionInfo);
                 break;
@@ -160,19 +171,25 @@ internal static class Program
         }
     }
 
+    private static bool HasRichPresence() => _currentPresence != null;
+
     private static void ClearPresenceFor(PlayGamesSessionInfo sessionInfo)
     {
-        Log.Information("Clearing Rich Presence for {GameTitle}", sessionInfo.Title);
+        if (Interlocked.Exchange(ref _currentPresence, null) == null)
+            return;
 
+        Log.Information("Clearing Rich Presence for {GameTitle}", sessionInfo.Title);
         _richPresenceHandler.RemovePresence();
     }
 
+    // Tray Enabled / Disabled Restorer
     private static RichPresence? _currentPresence;
     private static async Task SetPresenceFor(PlayGamesSessionInfo sessionInfo, RichPresence presence)
     {
+        _currentPresence = presence;
         var scrapedInfo = await PlayGamesWebScraper.TryGetPackageInfo(sessionInfo.PackageName);
-        var iconUrl = scrapedInfo?.IconLink;
-        if (scrapedInfo != null && !string.IsNullOrWhiteSpace(scrapedInfo.Title))
+        var iconUrl = scrapedInfo?.IconLink ?? string.Empty;
+        if (scrapedInfo != null && !string.IsNullOrWhiteSpace(scrapedInfo.Title) && sessionInfo.Title != scrapedInfo.Title)
         {
             Log.Information("Using remedied App Title: {PreviousTitle} -> {CurrentTitle}", sessionInfo.Title, scrapedInfo.Title);
             sessionInfo.Title = scrapedInfo.Title;
@@ -184,16 +201,19 @@ internal static class Program
         if (!string.IsNullOrWhiteSpace(iconUrl))
         {
             if (presence.HasAssets())
-                presence.Assets!.LargeImageKey = iconUrl;
+            {
+                var assets = presence.Assets;
+                assets.LargeImageKey = iconUrl;
+                assets.LargeImageText = presence.Details;
+            }
             else
                 presence.Assets = new()
                 {
-                    LargeImageKey = iconUrl
+                    LargeImageKey = iconUrl,
+                    LargeImageText = presence.Details
                 };
         }
-        presence.Assets.LargeImageText = presence.Details;
 
         _richPresenceHandler.SetPresence(presence);
-        _currentPresence = presence;
     }
 }
