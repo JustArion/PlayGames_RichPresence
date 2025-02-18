@@ -83,14 +83,14 @@ git submodule update
 dotnet publish .\src\PlayGamesRichPresence\ --runtime win-x64 --output ./bin/
 ```
 
-
 **with Auto-Update**
 ```ps1
+$VERSION = '1.0.0'
 git clone https://github.com/JustArion/PlayGames_RichPresence && cd "PlayGames_RichPresence"
 git submodule init
 git submodule update
 dotnet publish .\src\PlayGames_RichPresence\ --runtime win-x64 --output ./bin/
-vpk pack -packId 'PlayGames-RichPresence' -v '1.0.0' --outputDir 'velopack' --mainExe 'PlayGames RichPresence Standalone.exe' --packDir 'bin'
+vpk pack -packId 'PlayGames-RichPresence' -v "$VERSION" --outputDir 'velopack' --mainExe 'PlayGames RichPresence Standalone.exe' --packDir 'bin'
 echo "Successfully built to 'velopack'"
 ```
 
@@ -98,6 +98,14 @@ echo "Successfully built to 'velopack'"
 ```ps1
 git clone https://github.com/JustArion/PlayGames_RichPresence && cd "PlayGames_RichPresence"
 make build
+echo "Successfully built to 'bin'"
+```
+
+**Makefile with Auto-Update**
+```ps1
+git clone https://github.com/JustArion/PlayGames_RichPresence && cd "PlayGames_RichPresence"
+make velopack
+echo "Successfully built to 'velopack'"
 ```
 
 After running these commands the output should be in the `bin` folder in the root directory of the repo.
