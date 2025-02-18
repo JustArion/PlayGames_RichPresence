@@ -10,6 +10,7 @@ public class AppSessionMessageReaderTests
     [
         new("Assets/Service.log"),
         new("Assets/Additional/Service.1.log"),
+        new("Assets/Additional/Service.2.log"),
         new("Assets/Service - Developer.log"),
         new("Assets/Additional/Service.dev.1.log")
     ];
