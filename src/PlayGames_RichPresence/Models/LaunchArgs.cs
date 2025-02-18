@@ -13,6 +13,7 @@ public struct LaunchArgs
         RichPresenceDisabledOnStart = args.Contains(RP_DISABLED_ON_START);
         ExtendedLogging  = args.Contains("--extended-logging");
         NoFileLogging = args.Contains("--no-file-logging");
+        NoAutoUpdate = args.Contains("--no-auto-update");
 
         CustomApplicationId = ExtractArgumentValue("--custom-application-id=", args);
         HasCustomApplicationId = !string.IsNullOrWhiteSpace(CustomApplicationId);
@@ -34,6 +35,7 @@ public struct LaunchArgs
     public bool RichPresenceDisabledOnStart { get; }
     public bool NoFileLogging { get; }
     public bool ExtendedLogging { get; }
+    public bool NoAutoUpdate { get; set; }
 
     public bool HasCustomApplicationId { get; }
     public string CustomApplicationId { get; }

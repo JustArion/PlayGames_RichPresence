@@ -29,10 +29,12 @@ internal static class Program
 
         ApplicationLogs.Initialize(false);
 
-        var supportsVelopack = await AutoUpdate.Velopack();
-
-        if (supportsVelopack)
-            ApplicationLogs.Initialize(true);
+        if (!Arguments.NoAutoUpdate)
+        {
+            var supportsVelopack = await AutoUpdate.Velopack();
+            if (supportsVelopack)
+                ApplicationLogs.Initialize(true);
+        }
         ApplicationLogs.ListenToEvents();
 
         SingleInstanceApplication.Ensure();
@@ -190,7 +192,7 @@ internal static class Program
                 };
         }
         presence.Assets.LargeImageText = presence.Details;
-        
+
         _richPresenceHandler.SetPresence(presence);
         _currentPresence = presence;
     }
