@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using Dawn.PlayGames.RichPresence.Models;
+using Dawn.PlayGames.RichPresence.Tools;
 
 namespace Dawn.PlayGames.RichPresence.Tray;
 

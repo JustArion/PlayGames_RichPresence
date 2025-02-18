@@ -1,4 +1,4 @@
-﻿namespace Dawn.PlayGames.RichPresence;
+﻿namespace Dawn.PlayGames.RichPresence.Tools;
 
 using Microsoft.Win32;
 
