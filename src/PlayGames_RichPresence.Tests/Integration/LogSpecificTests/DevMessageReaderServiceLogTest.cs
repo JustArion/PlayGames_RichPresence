@@ -1,15 +1,15 @@
-﻿namespace PlayGames_RichPresence.Tests.Unit;
+﻿namespace PlayGames_RichPresence.Tests.Integration;
 
 using Dawn.PlayGames.RichPresence.Models;
 using Dawn.PlayGames.RichPresence.PlayGames;
 
 [TestFixture(TestOf = typeof(PlayGamesAppSessionMessageReader))]
-public class LogSpecificMessageReaderTests
+public class DevLogSpecificMessageReaderTests
 {
     [SetUp]
     public void SetUp()
     {
-        _sut = new PlayGamesAppSessionMessageReader("Assets/Service.log");
+        _sut = new PlayGamesAppSessionMessageReader("Assets/Service - Developer.log");
     }
     private PlayGamesAppSessionMessageReader _sut;
 
@@ -30,26 +30,7 @@ public class LogSpecificMessageReaderTests
         var sessionInfos = await _sut.GetAllSessionInfos(fileLock);
 
         // Assert
-        sessionInfos.Count.Should().Be(321);
-    }
-
-    [Test]
-    public async Task FirstSession_ShouldBe_DefenseDerby()
-    {
-        // Arrange
-        await using var fileLock = _sut.AquireFileLock();
-        
-        // Act
-        var sessionInfos = await _sut.GetAllSessionInfos(fileLock);
-
-        // Assert
-        sessionInfos.Should().HaveCountGreaterThanOrEqualTo(1);
-
-        var first = sessionInfos[0];
-
-        first.Title.Should().Be("Defense Derby");
-        first.PackageName.Should().Be("com.krafton.defensederby");
-        first.AppState.Should().Be(AppSessionState.Starting);
+        sessionInfos.Count.Should().Be(80);
     }
     
     [Test]

@@ -1,4 +1,4 @@
-﻿namespace PlayGames_RichPresence.Tests.Unit;
+﻿namespace PlayGames_RichPresence.Tests.Integration;
 
 using Dawn.PlayGames.RichPresence.Models;
 using Dawn.PlayGames.RichPresence.PlayGames;
