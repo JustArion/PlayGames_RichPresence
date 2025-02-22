@@ -6,18 +6,18 @@ namespace Dawn.PlayGames.RichPresence.PlayGames;
 
 using System.Text.RegularExpressions;
 
-public static partial class PlayGamesWebScraper
+public static partial class PlayStoreWebScraper
 {
-    public record PlayGamesWebInfo(string IconLink, string Title);
+    public record PlayStorePackageInfo(string IconLink, string Title);
 
-    private static readonly AsyncRetryPolicy<PlayGamesWebInfo?> _retryPolicy = Policy<PlayGamesWebInfo?>
+    private static readonly AsyncRetryPolicy<PlayStorePackageInfo?> _retryPolicy = Policy<PlayStorePackageInfo?>
         .Handle<Exception>()
         .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt) - 1));
 
-    private static readonly ConcurrentDictionary<string, PlayGamesWebInfo> _scraperCache = new();
-    public static async ValueTask<PlayGamesWebInfo?> TryGetPackageInfo(string packageName)
+    private static readonly ConcurrentDictionary<string, PlayStorePackageInfo> _webCache = new();
+    public static async ValueTask<PlayStorePackageInfo?> TryGetPackageInfo(string packageName)
     {
-        if (_scraperCache.TryGetValue(packageName, out var link))
+        if (_webCache.TryGetValue(packageName, out var link))
             return link;
 
         try
@@ -40,8 +40,8 @@ public static partial class PlayGamesWebScraper
                 var titleMatch = GetTitleRegex().Match(storePageContent);
                 var title = titleMatch.Success ? titleMatch.Groups[1].Value : string.Empty;
 
-                var info = new PlayGamesWebInfo(imageLink, title);
-                _scraperCache.TryAdd(packageName, info);
+                var info = new PlayStorePackageInfo(imageLink, title);
+                _webCache.TryAdd(packageName, info);
 
                 return info;
             });

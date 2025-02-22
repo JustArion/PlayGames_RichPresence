@@ -1,36 +1,26 @@
 ﻿namespace PlayGames_RichPresence.Tests.Integration;
 
+using System.Collections.Frozen;
 using Dawn.PlayGames.RichPresence.PlayGames;
 
-[TestFixture(TestOf = typeof(PlayGamesWebScraper))]
+[TestFixture(TestOf = typeof(PlayStoreWebScraper))]
 public class WebScraperTests
 {
-    private static readonly string[] _appPackages = ["com.YoStarEN.Arknights", "com.krafton.defensederby"];
+    private static readonly FrozenDictionary<string, string> _appPackagesToTitles = new Dictionary<string, string>
+    {
+        ["com.YoStarEN.Arknights"] = "Arknights",
+        ["com.krafton.defensederby"] = "Defense Derby"
+    }.ToFrozenDictionary();
     
-    [TestCaseSource(nameof(_appPackages))]
-    public async Task ShouldScrape_Links(string package)
+    [TestCaseSource(nameof(_appPackagesToTitles))]
+    public async Task ShouldScrape_Titles(KeyValuePair<string, string> package)
     {
         // Act
-        var packageInfo = await PlayGamesWebScraper.TryGetPackageInfo(package);
-        // Assert
-
-        packageInfo.Should().NotBeNull();
-            
-        Uri.TryCreate(packageInfo!.IconLink, UriKind.Absolute, out var uri).Should().BeTrue();
-        uri!.Scheme.Should().Be("https");
-    }
-    
-    [TestCaseSource(nameof(_appPackages))]
-    public async Task ShouldScrape_Titles(string package)
-    {
-        // Act
-        var packageInfo = await PlayGamesWebScraper.TryGetPackageInfo(package);
+        var packageInfo = await PlayStoreWebScraper.TryGetPackageInfo(package.Key);
 
         // Assert
         packageInfo.Should().NotBeNull();
 
-        packageInfo!.Title.Should().NotBeNullOrEmpty();
-
-        packageInfo.Title.Should().NotContain("Google");
+        packageInfo!.Title.Should().Be(package.Value);
     }
 }

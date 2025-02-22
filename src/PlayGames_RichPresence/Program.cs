@@ -187,7 +187,7 @@ internal static class Program
     private static async Task SetPresenceFor(PlayGamesSessionInfo sessionInfo, RichPresence presence)
     {
         _currentPresence = presence;
-        var scrapedInfo = await PlayGamesWebScraper.TryGetPackageInfo(sessionInfo.PackageName);
+        var scrapedInfo = await PlayStoreWebScraper.TryGetPackageInfo(sessionInfo.PackageName);
         var iconUrl = scrapedInfo?.IconLink ?? string.Empty;
         if (scrapedInfo != null && !string.IsNullOrWhiteSpace(scrapedInfo.Title) && sessionInfo.Title != scrapedInfo.Title)
         {
