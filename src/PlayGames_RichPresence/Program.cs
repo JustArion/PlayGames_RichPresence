@@ -26,7 +26,7 @@ internal static class Program
     private static async Task Main(string[] args)
     {
         Arguments = new(args);
-
+        Environment.CurrentDirectory = AppContext.BaseDirectory; // Startup sets it to %windir%
         ApplicationLogs.Initialize(false);
 
         if (!Arguments.NoAutoUpdate)
