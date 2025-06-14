@@ -94,6 +94,7 @@ git clone https://github.com/JustArion/PlayGames_RichPresence && cd "PlayGames_R
 git submodule init
 git submodule update
 dotnet publish .\src\PlayGames_RichPresence\ --runtime win-x64 --output ./bin/
+dotnet tool update -g vpk
 vpk pack -packId 'PlayGames-RichPresence' -v "$VERSION" --outputDir 'velopack' --mainExe 'PlayGames RichPresence Standalone.exe' --packDir 'bin'
 echo "Successfully built to 'velopack'"
 ```

@@ -11,7 +11,7 @@ restore: init
 install_velopack:
 	dotnet tool update -g vpk
 
-velopack: clean build
+velopack: install_velopack clean build
 	vpk pack -u 'PlayGames-RichPresence' -v '$(VERSION)' -e 'PlayGames RichPresence Standalone.exe' -o 'velopack' --packTitle 'Play Games - Rich Presence' -p 'bin' --shortcuts 'StartMenuRoot'
 
 clean:
