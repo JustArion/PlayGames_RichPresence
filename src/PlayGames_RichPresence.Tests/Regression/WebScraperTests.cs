@@ -6,7 +6,7 @@ using Dawn.PlayGames.RichPresence.PlayGames;
 [TestFixture(TestOf = typeof(PlayStoreWebScraper))]
 public class WebScraperTests
 {
-    private static readonly string[] _validPackages = ["com.YoStarEN.Arknights", "com.krafton.defensederby"];
+    private static readonly string[] _validPackages = ["com.YoStarEN.Arknights", "com.nexon.bluearchive"];
     private static readonly string[] _invalidPackages = ["com.android.vending", "com.android.browser"];
 
     [Test]

@@ -9,7 +9,7 @@ public class WebScraperTests
     private static readonly FrozenDictionary<string, string> _appPackagesToTitles = new Dictionary<string, string>
     {
         ["com.YoStarEN.Arknights"] = "Arknights",
-        ["com.krafton.defensederby"] = "Defense Derby"
+        ["com.nexon.bluearchive"] = "Blue Archive"
     }.ToFrozenDictionary();
     
     [TestCaseSource(nameof(_appPackagesToTitles))]
