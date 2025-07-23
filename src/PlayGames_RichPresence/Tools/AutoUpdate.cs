@@ -18,7 +18,10 @@ internal static class AutoUpdate
     {
         try
         {
-            VelopackApp.Build().Run(new VelopackUpdateLogger(Log.Logger));
+            var app = VelopackApp.Build();
+            app.SetLogger(VelopackUpdateLogger.Create());
+
+            app.Run();
 
             var manager =
                 new UpdateManager(new GithubSource($"https://github.com/JustArion/{REPO_NAME}", null, false));
