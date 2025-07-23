@@ -21,18 +21,22 @@ public class ClassNameEnricher : ILogEventEnricher
         var type = frame?.GetMethod()?.ReflectedType;
         if (type == null)
             return;
-        
+
         logEvent.AddPropertyIfAbsent(propertyFactory.CreateProperty("Source", GetClassName(type)));
     }
 
-    private string? GetClassName(Type type)
+    private static string? GetClassName(Type type, bool includeNamespace = false)
     {
         var last = type.FullName!.Split('.').LastOrDefault();
 
         var className = last?.Split('+').FirstOrDefault()?.Replace("`1", string.Empty).Replace('_', '-');
-        return type.Namespace != null 
-            ? $"{type.Namespace}.{className}" 
-            : className;
+
+        if (includeNamespace)
+            return type.Namespace != null
+                ? $"{type.Namespace}.{className}"
+                : className;
+
+        return className;
     }
 
     private const string BLUE_ANSI = "\u001b[38;2;59;120;255m";
