@@ -17,7 +17,7 @@
 
 ---
 ### Requirements
-[.NET 8.0.X Desktop Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) (x64)
+[.NET 9.0.X Desktop Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/9.0) (x64)
 
 ---
 ### Installation
@@ -95,7 +95,7 @@ git submodule init
 git submodule update
 dotnet publish .\src\PlayGames_RichPresence\ --runtime win-x64 --output ./bin/
 dotnet tool update -g vpk
-vpk pack -packId 'PlayGames-RichPresence' -v "$VERSION" --outputDir 'velopack' --mainExe 'PlayGames RichPresence Standalone.exe' --packDir 'bin'
+vpk pack --packId 'PlayGames-RichPresence' -v "$VERSION" --outputDir 'velopack' --mainExe 'PlayGames RichPresence Standalone.exe' --packDir 'bin' --framework net9-x64-desktop
 echo "Successfully built to 'velopack'"
 ```
 
