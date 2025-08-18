@@ -83,8 +83,7 @@ Enabling `Run on Startup` clones the current launch arguments and runs it as tha
 **Manual**
 ```ps1
 git clone https://github.com/JustArion/PlayGames_RichPresence && cd "PlayGames_RichPresence"
-git submodule init
-git submodule update
+git submodule update --init --remote --recursive
 dotnet publish .\src\PlayGamesRichPresence\ --runtime win-x64 --output ./bin/
 ```
 
@@ -92,8 +91,7 @@ dotnet publish .\src\PlayGamesRichPresence\ --runtime win-x64 --output ./bin/
 ```ps1
 $VERSION = '1.0.0'
 git clone https://github.com/JustArion/PlayGames_RichPresence && cd "PlayGames_RichPresence"
-git submodule init
-git submodule update
+git submodule update --init --remote --recursive
 dotnet publish .\src\PlayGames_RichPresence\ --runtime win-x64 --output ./bin/
 dotnet tool update -g vpk
 vpk pack --packId 'PlayGames-RichPresence' -v "$VERSION" --outputDir 'velopack' --mainExe 'PlayGames RichPresence Standalone.exe' --packDir 'bin' --framework net9-x64-desktop
