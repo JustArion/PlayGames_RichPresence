@@ -1,4 +1,5 @@
-﻿using Dawn.PlayGames.RichPresence.Models;
+﻿using System.Text;
+using Dawn.PlayGames.RichPresence.Models;
 
 namespace Dawn.PlayGames.RichPresence.PlayGames;
 
@@ -66,7 +67,7 @@ internal static partial class AppLifetimeParser
             return null;
 
 
-        if (!DateTimeOffset.TryParseExact(startedTimestampAsString, AppSessionRegexes.STARTED_TIMESTAMP_FORMAT, null, DateTimeStyles.None , out var startedTimestamp))
+        if (!DateTimeOffset.TryParseExact(startedTimestampAsString, AppSessionRegexes.STARTED_TIMESTAMP_FORMAT, CultureInfo.InvariantCulture, DateTimeStyles.None , out var startedTimestamp))
         {
             Log.Warning("Failed to parse started timestamp: '{StartedTimestampString}' for {Info}", startedTimestampAsString, info);
             return null;

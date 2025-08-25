@@ -3,6 +3,7 @@
 ## v1.5.0
 
 - ⚡️ Updated .NET Runtime (.NET 8 -> .NET 9)
+- 🦺 Bugfix: Rich Presences would not show for non-"en-US"/"en-GB" localizations
 
 ## v1.4.1
 
