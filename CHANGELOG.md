@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.5.1
+
+- 🦺 Enabling Rich Presence on Discord after a game has already started would not show the game as being played. It now correctly updates within 5 seconds.
+
 ## v1.5.0
 
 - ⚡️ Updated .NET Runtime (.NET 8 -> .NET 9)
