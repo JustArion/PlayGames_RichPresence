@@ -10,23 +10,24 @@ public static partial class PlayStoreWebScraper
 {
     public record PlayStorePackageInfo(string IconLink, string Title);
 
+    private static readonly HttpClient _client = new();
     private static readonly AsyncRetryPolicy<PlayStorePackageInfo?> _retryPolicy = Policy<PlayStorePackageInfo?>
         .Handle<Exception>()
         .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt) - 1));
 
     private static readonly ConcurrentDictionary<string, PlayStorePackageInfo> _webCache = new();
-    public static async ValueTask<PlayStorePackageInfo?> TryGetPackageInfo(string packageName)
+    public static async ValueTask<PlayStorePackageInfo?> TryGetPackageInfo(string packageName, AsyncRetryPolicy<PlayStorePackageInfo?>? retryPolicy = null)
     {
         if (_webCache.TryGetValue(packageName, out var link))
             return link;
 
+        retryPolicy ??= _retryPolicy;
+
         try
         {
-            return await _retryPolicy.ExecuteAsync(async () =>
+            return await retryPolicy.ExecuteAsync(async () =>
             {
-                using var client = new HttpClient();
-
-                var storePageContent = await client.GetStringAsync($"https://play.google.com/store/apps/details?id={packageName}");
+                var storePageContent = await _client.GetStringAsync($"https://play.google.com/store/apps/details?id={packageName}");
 
                 var match = GetImageRegex().Match(storePageContent);
 
