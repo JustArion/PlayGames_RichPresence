@@ -72,7 +72,7 @@ public class RichPresence_Tray
         }
     }
 
-    private void LogInteractionsRecursively(ToolStripItemCollection items)
+    private static void LogInteractionsRecursively(ToolStripItemCollection items)
     {
         foreach (ToolStripItem item in items)
         {
@@ -108,9 +108,9 @@ public class RichPresence_Tray
         return enabledItem;
     }
 
-    private void ChangeEnabledStateOnStartupIfNecessary(bool enabled)
+    private static void ChangeEnabledStateOnStartupIfNecessary(bool enabled)
     {
-        if (!Startup.StartsWithWindows(Application.ProductName!))
+        if (!Startup.StartsWithWindows(Application.ProductName!, Application.ExecutablePath))
             return;
 
         Startup.StartWithWindows(Application.ProductName!,
@@ -122,10 +122,10 @@ public class RichPresence_Tray
 
     private ToolStripMenuItem HideTray() => new("Hide Tray", null, (_, _) => Tray.Visible = false);
 
-    private ToolStripMenuItem RunOnStartup()
+    private static ToolStripMenuItem RunOnStartup()
     {
         var startup = new ToolStripMenuItem("Run on Startup");
-        startup.Checked = Startup.StartsWithWindows(Application.ProductName!);
+        startup.Checked = Startup.StartsWithWindows(Application.ProductName!, Application.ExecutablePath);
 
         startup.Click += delegate
         {
@@ -142,7 +142,7 @@ public class RichPresence_Tray
 
     private ToolStripMenuItem Exit() => new("Exit", null, (_, _) => Tray.Dispose());
 
-    private ToolStripItem[] Header()
+    private static ToolStripItem[] Header()
     {
         var header = new ToolStripMenuItem("Play Games Rich Presence");
         header.Enabled = false;
