@@ -1,4 +1,6 @@
 using System.Diagnostics;
+using NuGet.Versioning;
+using Velopack;
 
 namespace Dawn.PlayGames.RichPresence;
 
@@ -33,6 +35,7 @@ internal static class Program
         };
         Environment.CurrentDirectory = AppContext.BaseDirectory; // Startup sets it to %windir%
         ApplicationLogs.Initialize(false);
+        InitializeVelopack();
 
         if (!Arguments.NoAutoUpdate)
         {
@@ -64,6 +67,16 @@ internal static class Program
         _richPresenceHandler.Dispose();
         _processBinding?.Dispose();
     }
+
+    private static void InitializeVelopack()
+    {
+        var app = VelopackApp.Build();
+        app.OnBeforeUninstallFastCallback(OnUninstall);
+        app.SetLogger(VelopackUpdateLogger.Create());
+        app.Run();
+    }
+
+    private static void OnUninstall(SemanticVersion version) => Startup.RemoveStartup(Application.ProductName!);
 
     private static void OnRichPresenceEnabledChanged(object? sender, bool active)
     {
