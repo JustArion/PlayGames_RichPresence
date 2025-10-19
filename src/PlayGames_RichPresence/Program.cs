@@ -27,22 +27,20 @@ internal static class Program
     [STAThread]
     private static async Task Main(string[] args)
     {
+        Environment.CurrentDirectory = AppContext.BaseDirectory; // Startup sets it to %windir%
         Arguments = new(args)
         {
             #if DEBUG
             ExtendedLogging = true
             #endif
         };
-        Environment.CurrentDirectory = AppContext.BaseDirectory; // Startup sets it to %windir%
-        ApplicationLogs.Initialize(false);
         InitializeVelopack();
 
+        ApplicationLogs.Initialize();
+
         if (!Arguments.NoAutoUpdate)
-        {
-            var supportsVelopack = await AutoUpdate.Velopack();
-            if (supportsVelopack)
-                ApplicationLogs.Initialize(true);
-        }
+            await AutoUpdate.CheckForUpdates();
+
         ApplicationLogs.ListenToEvents();
 
         SingleInstanceApplication.Ensure();
@@ -72,7 +70,6 @@ internal static class Program
     {
         var app = VelopackApp.Build();
         app.OnBeforeUninstallFastCallback(OnUninstall);
-        app.SetLogger(VelopackUpdateLogger.Create());
         app.Run();
     }
 

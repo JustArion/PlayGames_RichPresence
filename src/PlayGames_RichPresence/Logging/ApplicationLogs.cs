@@ -33,7 +33,7 @@ internal static class ApplicationLogs
             Console.WriteLine("[*] Attached Console to Parent");
     }
 
-    public static void Initialize(bool writeToParent)
+    public static void Initialize()
     {
         try
         {
@@ -46,10 +46,7 @@ internal static class ApplicationLogs
                     applyThemeToRedirectedOutput: true, standardErrorFromLevel: LogEventLevel.Error);
 
             if (!Arguments.NoFileLogging)
-                config.WriteTo.File(
-                    writeToParent
-                        ? Path.Combine(AppContext.BaseDirectory, $"{Application.ProductName}.log")
-                        : Path.Combine(Directory.GetParent(".")!.FullName, $"{Application.ProductName}.log"),
+                config.WriteTo.File(Path.Combine(Environment.CurrentDirectory, $"{Application.ProductName}.log"),
                     outputTemplate: LOGGING_FORMAT,
                     restrictedToMinimumLevel: Arguments.ExtendedLogging
                         ? LogEventLevel.Verbose

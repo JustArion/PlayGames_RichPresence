@@ -14,30 +14,28 @@ internal static class AutoUpdate
     private static readonly AsyncRetryPolicy<UpdateInfo?> _retryPolicy = Policy<UpdateInfo?>
         .Handle<Exception>()
         .WaitAndRetryAsync(MAX_RETRIES, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt) - 1));
-    internal static async Task<bool> Velopack()
+    internal static async Task CheckForUpdates()
     {
         try
         {
-            var manager =
-                new UpdateManager(new GithubSource($"https://github.com/JustArion/{REPO_NAME}", null, false));
+            var manager = new UpdateManager(new GithubSource($"https://github.com/JustArion/{REPO_NAME}", null, false));
 
             if (manager.IsInstalled)
                 Log.Information("The Velopack Update Manager is present");
             else
             {
                 Log.Information("The Velopack Update Manager is not present");
-                return false;
+                return;
             }
             var response = await _retryPolicy.ExecuteAndCaptureAsync(async () => await manager.CheckForUpdatesAsync());
             if (response.Outcome == OutcomeType.Failure)
             {
                 Log.Error(response.FinalException, "Failed to check for updates");
-                return false;
+                return;
             }
 
             var version = response.Result;
-            if (version == null)
-                return false;
+            if (version == null) return;
 
             await manager.DownloadUpdatesAsync(version);
 
@@ -45,12 +43,12 @@ internal static class AutoUpdate
                 version.TargetFullRelease.Version);
             // manager.ApplyUpdatesAndRestart(version);
 
-            return true;
+            return;
         }
         catch (Exception e)
         {
             Log.Error(e, "Failed to update using Velopack");
-            return false;
+            return;
         }
     }
 }
