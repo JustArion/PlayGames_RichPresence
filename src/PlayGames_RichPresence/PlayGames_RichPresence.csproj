@@ -10,6 +10,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <!-- Don't change this without changing the same in the Makefile and readme.md -->
     <AssemblyName>PlayGames RichPresence Standalone</AssemblyName>
+    <!--                                                                           -->
+
     <RootNamespace>Dawn.PlayGames.RichPresence</RootNamespace>
     <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
     <Copyright>https://github.com/JustArion/MuMu_RichPresence/#GPL-2.0-1-ov-file</Copyright>
@@ -20,7 +22,7 @@
   </PropertyGroup>
 
   <PropertyGroup Label="Versioning">
-    <Version>1.5.1</Version>
+    <Version>1.5.2</Version>
 
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <ProductVersion>$Version)</ProductVersion>
