@@ -25,7 +25,7 @@ internal static class Program
     private static readonly string _devFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), DEV_FILE_PATH);
 
     [STAThread]
-    private static async Task Main(string[] args)
+    private static void Main(string[] args)
     {
         Environment.CurrentDirectory = AppContext.BaseDirectory; // Startup sets it to %windir%
         Arguments = new(args)
@@ -38,12 +38,13 @@ internal static class Program
 
         ApplicationLogs.Initialize();
 
-        if (!Arguments.NoAutoUpdate)
-            await AutoUpdate.CheckForUpdates();
+        SingleInstanceApplication.Ensure();
 
         ApplicationLogs.ListenToEvents();
 
-        SingleInstanceApplication.Ensure();
+        if (!Arguments.NoAutoUpdate)
+            Task.Run(AutoUpdate.CheckForUpdates);
+
 
         _richPresenceHandler = new();
         var reader = new PlayGamesAppSessionMessageReader(_filePath);

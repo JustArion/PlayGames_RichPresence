@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.5.2
+- 🦺 Improved startup times for `Auto Update` users. Checking for updates caused the app to wait until checking was done.
+
 ## v1.5.1
 
 - 🦺 Bugfix: Enabling Rich Presence on Discord after a game has already started would not show the game as being played. It now correctly updates within 5 seconds.
