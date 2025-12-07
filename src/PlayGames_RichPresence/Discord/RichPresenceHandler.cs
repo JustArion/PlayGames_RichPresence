@@ -1,11 +1,10 @@
 ﻿#define LISTEN_TO_RPCS
 using Dawn.PlayGames.RichPresence.Logging;
-using DiscordRPC.Message;
-
-namespace Dawn.PlayGames.RichPresence.DiscordRichPresence;
-
 using DiscordRPC;
-using global::Serilog.Core;
+using DiscordRPC.Message;
+using Serilog.Core;
+
+namespace Dawn.PlayGames.RichPresence.Discord;
 
 public class RichPresenceHandler : IDisposable
 {
@@ -15,7 +14,7 @@ public class RichPresenceHandler : IDisposable
 
     private readonly Logger _logger = (Logger)Log.ForContext<RichPresenceHandler>();
     private DiscordRpcClient _client;
-    private RichPresence? _currentPresence;
+    private DiscordRPC.RichPresence? _currentPresence;
     private CancellationTokenSource? _disposingSource;
 
     public RichPresenceHandler()
@@ -38,7 +37,7 @@ public class RichPresenceHandler : IDisposable
     }
 
 
-    public bool SetPresence(RichPresence? presence)
+    public bool SetPresence(DiscordRPC.RichPresence? presence)
     {
         if (!ApplicationFeatures.GetFeature(x => x.RichPresenceEnabled) || Interlocked.Exchange(ref _currentPresence, presence) == presence)
             return false;

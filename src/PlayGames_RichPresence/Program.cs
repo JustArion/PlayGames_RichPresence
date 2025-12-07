@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Dawn.PlayGames.RichPresence.Discord;
 using NuGet.Versioning;
 using Velopack;
 
@@ -8,7 +9,6 @@ using Logging;
 using Models;
 using PlayGames;
 using Tools;
-using DiscordRichPresence;
 using DiscordRPC;
 using Tray;
 
