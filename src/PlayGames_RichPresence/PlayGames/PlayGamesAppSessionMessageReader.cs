@@ -9,8 +9,6 @@ using System.Text;
 
 public class PlayGamesAppSessionMessageReader(string filePath) : IDisposable
 {
-    private readonly ILogger _logger = Log.ForContext<PlayGamesAppSessionMessageReader>();
-
     private bool _started;
     private long _lastStreamPosition;
     private readonly PlayGamesLogWatcher _logWatcher = new(filePath);
@@ -33,7 +31,7 @@ public class PlayGamesAppSessionMessageReader(string filePath) : IDisposable
         // Wait till the file exists
         if (!File.Exists(filePath))
         {
-            _logger.Debug("File not found: Service.log");
+            Log.Debug("File not found: Service.log");
             await Task.Delay(TimeSpan.FromSeconds(5));
         }
 
@@ -82,7 +80,7 @@ public class PlayGamesAppSessionMessageReader(string filePath) : IDisposable
             Math.Round(reader.BaseStream.Length / Math.Pow(1024, 2), 0), reader.BaseStream.Position);
     }
 
-    private void LogFileWatcherOnError(object? _, ErrorEventArgs e) => _logger.Error(e.GetException(), "File watcher error");
+    private void LogFileWatcherOnError(object? _, ErrorEventArgs e) => Log.Error(e.GetException(), "File watcher error");
 
     private bool _reading;
     private void LogFileWatcherOnFileChanged(object? _, FileSystemEventArgs args)
@@ -122,7 +120,7 @@ public class PlayGamesAppSessionMessageReader(string filePath) : IDisposable
         }
         catch (Exception e)
         {
-            _logger.Error(e, "Failed to read the change in file {FilePath}", filePath);
+            Log.Error(e, "Failed to read the change in file {FilePath}", filePath);
         }
     }
 

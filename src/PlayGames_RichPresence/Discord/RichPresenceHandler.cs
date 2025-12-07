@@ -12,20 +12,19 @@ public class RichPresenceHandler : IDisposable
     // This does NOT include any game data but exclusively just that the app is running.
     private const string DEFAULT_APPLICATION_ID = "1204167311922167860";
 
-    private readonly Logger _logger = (Logger)Log.ForContext<RichPresenceHandler>();
     private DiscordRpcClient _client;
     private DiscordRPC.RichPresence? _currentPresence;
     private CancellationTokenSource? _disposingSource;
 
     public RichPresenceHandler()
     {
-        _logger.Debug("Initializing IPC Client");
+        Log.Debug("Initializing IPC Client");
 
         var applicationId = Arguments.HasCustomApplicationId
             ? Arguments.CustomApplicationId
             : DEFAULT_APPLICATION_ID;
 
-        _client = new DiscordRpcClient(applicationId, logger: (SerilogToDiscordLogger)_logger);
+        _client = new DiscordRpcClient(applicationId, logger: (SerilogToDiscordLogger)(Logger)Log.Logger);
 
         _client.SkipIdenticalPresence = false;
         _client.Initialize();
@@ -81,7 +80,7 @@ public class RichPresenceHandler : IDisposable
         if (_currentPresence != null)
             return;
 
-        _logger.Verbose("Attempting to correct some rich presence ghosting");
+        Log.Verbose("Attempting to correct some rich presence ghosting");
         _client.ClearPresence();
     }
 

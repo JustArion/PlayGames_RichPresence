@@ -9,7 +9,6 @@ using WinForms.ContextMenu;
 public class RichPresence_Tray
 {
     internal NotifyIcon Tray { get; private set; }
-    private readonly ILogger _logger = Log.ForContext<RichPresence_Tray>();
     private readonly string _serviceLogFilePath;
     public RichPresence_Tray(string serviceLogFilePath)
     {
@@ -48,7 +47,7 @@ public class RichPresence_Tray
         {
             if (Arguments.ExtendedLogging)
             {
-                _logger.Information("Adding extended logging items");
+                Log.Information("Adding extended logging items");
                 items.Add("Open App Directory", null, (_, _) => StartProcess(()=> Process.Start("explorer", $"/select,\"{Application.ExecutablePath}\"")));
                 items.Add("Open Log File", null, (_, _) =>
                 {
@@ -62,7 +61,7 @@ public class RichPresence_Tray
         }
         catch (Exception ex)
         {
-            _logger.Error(ex, "Failed to add tray items");
+            Log.Error(ex, "Failed to add tray items");
         }
         finally
         {
