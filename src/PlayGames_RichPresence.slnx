@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="PlayGames_RichPresence.Tests/PlayGames_RichPresence.Tests.csproj" />
+  <Project Path="PlayGames_RichPresence/PlayGames_RichPresence.csproj" />
+  <Project Path="RiotTrayContextTheme/RiotTrayContextTheme.csproj" />
+</Solution>

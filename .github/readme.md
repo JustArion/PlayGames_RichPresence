@@ -17,7 +17,7 @@
 
 ---
 ### Requirements
-[.NET 9.0.X Desktop Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-desktop-9.0.8-windows-x64-installer) (x64)
+[.NET 10.0.X Desktop Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-desktop-10.0.0-windows-x64-installer) (x64)
 
 ---
 ### Installation
@@ -87,7 +87,7 @@ Set-ItemProperty -Path $path -Name $key -Value ($value + ' --hide-tray-icon-on-s
 
 #### Pre-Build Requirements
 
-- [.NET SDK 9.0.X](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-9.0.304-windows-x64-installer) (x64)<br>
+- [.NET SDK 10.0.X](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-10.0.100-windows-x64-installer) (x64)<br>
 - [Git](https://git-scm.com/downloads)
 
 ---
@@ -102,12 +102,12 @@ dotnet publish .\src\PlayGamesRichPresence\ --runtime win-x64 --output ./bin/
 
 **with Auto-Update**
 ```ps1
-$VERSION = '1.0.0'
+$VERSION = '2.0.0'
 git clone https://github.com/JustArion/PlayGames_RichPresence && cd "PlayGames_RichPresence"
 git submodule update --init --remote --recursive
 dotnet publish .\src\PlayGames_RichPresence\ --runtime win-x64 --output ./bin/
 dotnet tool update -g vpk
-vpk pack --packId 'PlayGames-RichPresence' -v "$VERSION" --outputDir 'velopack' --mainExe 'PlayGames RichPresence Standalone.exe' --packDir 'bin' --framework net9-x64-desktop
+vpk pack --packId 'PlayGames-RichPresence' -v "$VERSION" --outputDir 'velopack' --mainExe 'PlayGames RichPresence Standalone.exe' --packDir 'bin' --framework net10-x64-desktop
 echo "Successfully built to 'velopack'"
 ```
 
@@ -121,7 +121,7 @@ echo "Successfully built to 'bin'"
 **Makefile with Auto-Update**
 ```ps1
 git clone https://github.com/JustArion/PlayGames_RichPresence && cd "PlayGames_RichPresence"
-make velopack VERSION="1.0.0"
+make velopack VERSION="2.0.0"
 echo "Successfully built to 'velopack'"
 ```
 
