@@ -43,7 +43,7 @@
     <DebugType>embedded</DebugType>
     <PathMap>$(MSBuildProjectDirectory)=/</PathMap>
   </PropertyGroup>
-  
+
   <ItemGroup Label="Remove lock file in SLN view">
     <None Remove="packages.lock.json"/>
   </ItemGroup>
@@ -56,7 +56,7 @@
     <PackageReference Include="DynamicData" Version="9.4.1" />
     <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
     <PackageReference Include="Vanara.PInvoke.Kernel32" Version="4.2.1" />
-    <PackageReference Include="DiscordRichPresence" Version="1.6.1.70" />
+    <PackageReference Include="DiscordRichPresence" Version="1.5.0.51" />
     <PackageReference Include="Polly" Version="8.6.5" />
     <PackageReference Include="Velopack" Version="0.0.1298" />
   </ItemGroup>
