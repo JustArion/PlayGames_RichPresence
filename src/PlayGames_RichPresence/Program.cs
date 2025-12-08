@@ -18,6 +18,7 @@ internal static class Program
 
     private static RichPresence_Tray _trayIcon = null!;
     private static RichPresenceHandler _richPresenceHandler = null!;
+    private static DiscoverabilityHandler _discoverabilityHandler = null!;
     private static ProcessBinding? _processBinding;
     private const string FILE_PATH = @"Google\Play Games\Logs\Service.log";
     private static readonly string _filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), FILE_PATH);
@@ -52,6 +53,7 @@ internal static class Program
 
         _trayIcon = new(_filePath);
         _trayIcon.RichPresenceEnabledChanged += OnRichPresenceEnabledChanged;
+        _discoverabilityHandler = new();
 
         reader.OnSessionInfoReceived += SessionInfoReceived;
         reader.StartAsync();
@@ -80,12 +82,20 @@ internal static class Program
     {
         if (active)
         {
-            if (_currentPresence != null)
-                _richPresenceHandler.SetPresence(_currentPresence);
+            if (_currentPresence is not { } presence)
+                return;
+            if (_currentSessionInfo is not { } sessionInfo)
+            {
+                Log.Error("Trying to set a rich presence without an associated lifetime! Known details are: AppId: {AppId}, Details: {Details}", _currentApplicationId, presence.Details);
+                return;
+            }
+
+            _richPresenceHandler.TrySetPresence(sessionInfo.Title, presence, _currentApplicationId);
             return;
         }
 
-        _richPresenceHandler.RemovePresence();
+        _richPresenceHandler.ClearPresence(_currentSessionInfo?.Title);
+        _currentSessionInfo = null;
     }
 
     private static CancellationTokenSource _cts = new();
@@ -116,14 +126,15 @@ internal static class Program
 
     }
 
+    private static PlayGamesSessionInfo? _currentSessionInfo;
+    private static string? _currentApplicationId;
     private static AppSessionState _currentAppState;
     private static async ValueTask SetPresenceFromSessionInfoAsync(PlayGamesSessionInfo sessionInfo)
     {
         var currentState = _currentAppState;
+        // Why were we comparing this here and not using the local variable?
         if (_currentAppState == sessionInfo.AppState)
             return;
-
-
 
         if (Process.GetProcessesByName("crosvm").Length == 0)
         {
@@ -136,6 +147,7 @@ internal static class Program
             return;
 
         _currentAppState = sessionInfo.AppState;
+        _currentSessionInfo = sessionInfo;
         Log.Information("App State Changed from {PreviousAppState} -> {CurrentAppState} | {Timestamp}", currentState, sessionInfo.AppState, sessionInfo.StartTime);
 
 
@@ -195,7 +207,8 @@ internal static class Program
             return;
 
         Log.Information("Clearing Rich Presence for {GameTitle}", sessionInfo.Title);
-        _richPresenceHandler.RemovePresence();
+        _richPresenceHandler.ClearPresence(_currentSessionInfo?.Title);
+        _currentSessionInfo = null;
     }
 
     // Tray Enabled / Disabled Restorer
@@ -211,8 +224,9 @@ internal static class Program
             sessionInfo.Title = scrapedInfo.Title;
         }
 
-
-        presence.Details ??= sessionInfo.Title;
+        var officialApplicationId = await _discoverabilityHandler.TryGetOfficialApplicationId(sessionInfo.Title);
+        if (officialApplicationId == null)
+            presence.Details ??= sessionInfo.Title;
 
         if (!string.IsNullOrWhiteSpace(iconUrl))
         {
@@ -230,6 +244,7 @@ internal static class Program
                 };
         }
 
-        _richPresenceHandler.SetPresence(presence);
+        _currentApplicationId = officialApplicationId;
+        _richPresenceHandler.TrySetPresence(sessionInfo.Title, presence, officialApplicationId);
     }
 }
