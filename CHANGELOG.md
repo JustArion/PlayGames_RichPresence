@@ -1,6 +1,7 @@
 # Changelog
 
 ## v2.0.0
+- ⚡️Now shows the game you're playing in the members / direct message list instead of "Google Play Games"
 - ⚡️Most games will now show "Playing \<game name>" instead of normally "Playing Google Play Games"
     - Discord has added a ton of mobile games to their "Official Presences" list, which we now also use if we detect any of them!
     - What this does **not** do is show the game in your "Recently Played" list. As this to my knowledge requires each game to have a specific path / process name which can *somewhat* be set by the user but not programatically

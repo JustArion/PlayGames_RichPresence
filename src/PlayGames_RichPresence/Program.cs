@@ -226,7 +226,10 @@ internal static class Program
 
         var officialApplicationId = await _discoverabilityHandler.TryGetOfficialApplicationId(sessionInfo.Title);
         if (officialApplicationId == null)
+        {
             presence.Details ??= sessionInfo.Title;
+            presence.WithStatusDisplay(StatusDisplayType.Details);
+        }
 
         if (!string.IsNullOrWhiteSpace(iconUrl))
         {
