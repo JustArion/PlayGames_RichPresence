@@ -231,23 +231,28 @@ internal static class Program
             presence.WithStatusDisplay(StatusDisplayType.Details);
         }
 
-        if (!string.IsNullOrWhiteSpace(iconUrl))
-        {
-            if (presence.HasAssets())
-            {
-                var assets = presence.Assets;
-                assets.LargeImageKey = iconUrl;
-                assets.LargeImageText = presence.Details;
-            }
-            else
-                presence.Assets = new()
-                {
-                    LargeImageKey = iconUrl,
-                    LargeImageText = presence.Details
-                };
-        }
+        if (!string.IsNullOrWhiteSpace(iconUrl)) PopulatePresenceAssets(sessionInfo, presence, iconUrl);
 
         _currentApplicationId = officialApplicationId;
         _richPresenceHandler.TrySetPresence(sessionInfo.Title, presence, officialApplicationId);
+    }
+
+    private static void PopulatePresenceAssets(PlayGamesSessionInfo sessionInfo, RichPresence presence, string iconLink)
+    {
+        var imageUrl = PlayStoreWebScraper.GetPlayStoreLinkForPackage(sessionInfo.PackageName);
+        if (presence.HasAssets())
+        {
+            var assets = presence.Assets;
+            assets.LargeImageKey = iconLink;
+            assets.LargeImageText = presence.Details;
+            assets.LargeImageUrl = imageUrl;
+        }
+        else
+            presence.Assets = new()
+            {
+                LargeImageKey = iconLink,
+                LargeImageText = presence.Details,
+                LargeImageUrl = imageUrl
+            };
     }
 }
