@@ -110,10 +110,8 @@ public class PlayGamesAppSessionMessageReader(string filePath) : IDisposable
             reader.BaseStream.Seek(_lastStreamPosition, SeekOrigin.Begin);
             reader.DiscardBufferedData();
 
-            while (!reader.EndOfStream)
+            while (await reader.ReadLineAsync() is { } line)
             {
-                var line = await reader.ReadLineAsync();
-
                 _lastStreamPosition = reader.BaseStream.Position;
                 await ProcessLogChunkAsync(line, reader);
             }
@@ -126,14 +124,14 @@ public class PlayGamesAppSessionMessageReader(string filePath) : IDisposable
 
     private uint _initialLinesRead;
 
-    private async Task<string> ReadLineAsync(StreamReader reader, bool increment = true)
+    private async Task<string?> ReadLineAsync(StreamReader reader, bool increment = true)
     {
         var retVal = await reader.ReadLineAsync();
 
         if (increment && retVal != null)
             Interlocked.Increment(ref _initialLinesRead);
 
-        return retVal ?? string.Empty;
+        return retVal;
     }
     /// <summary>
     /// The method ensures that a Rich Presence will be enabled if a game is running before this program started.
@@ -146,9 +144,8 @@ public class PlayGamesAppSessionMessageReader(string filePath) : IDisposable
         reader.BaseStream.Seek(0, SeekOrigin.Begin);
         _initialLinesRead = 0;
 
-        while (!reader.EndOfStream)
+        while (await ReadLineAsync(reader) is { } line)
         {
-            var line = await ReadLineAsync(reader);
             if (string.IsNullOrWhiteSpace(line))
                 continue;
 
@@ -207,12 +204,12 @@ public class PlayGamesAppSessionMessageReader(string filePath) : IDisposable
     {
         var sb = new StringBuilder();
         sb.AppendLine(line);
-        line = await ReadLineAsync(reader, false);
+        line = (await ReadLineAsync(reader, false))!;
 
         while (!string.IsNullOrWhiteSpace(line) && line != "}")
         {
             sb.AppendLine(line);
-            line = await ReadLineAsync(reader, increment);
+            line = (await ReadLineAsync(reader, increment))!;
         }
 
         sb.AppendLine("}");
