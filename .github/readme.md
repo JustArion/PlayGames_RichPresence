@@ -17,7 +17,7 @@
 
 ---
 ### Requirements
-[.NET 10.0.X Desktop Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-desktop-10.0.0-windows-x64-installer) (x64)
+[.NET 10 Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-desktop-10.0.0-windows-x64-installer) (x64)
 
 ---
 ### Installation
@@ -87,7 +87,7 @@ Set-ItemProperty -Path $path -Name $key -Value ($value + ' --hide-tray-icon-on-s
 
 #### Pre-Build Requirements
 
-- [.NET SDK 10.0.X](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-10.0.100-windows-x64-installer) (x64)<br>
+- [.NET 10 SDK ](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-10.0.100-windows-x64-installer) (x64)<br>
 - [Git](https://git-scm.com/downloads)
 
 ---
