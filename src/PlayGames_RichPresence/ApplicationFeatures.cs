@@ -57,6 +57,8 @@ internal class ApplicationFeatures
         featureBackingField = newValue;
     }
 
+    // ReSharper disable once ReplaceWithFieldKeyword
+    // This is implicitly used using reflection
     private bool _richPresenceEnabled;
 
     public bool RichPresenceEnabled
