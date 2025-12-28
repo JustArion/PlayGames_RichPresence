@@ -52,6 +52,8 @@ public class RichPresenceHandler : IDisposable
 
     private void EnsurePresenceLifetime()
     {
+        // Todo: Check if the cancel actually matters here, the below polling doesn't get triggered when rich presence is not running
+        _presenceLifetimePollSource?.Cancel();
         _presenceLifetimePollSource = new();
         var token = _presenceLifetimePollSource.Token;
         // This continiously sets the presence to the current one.
