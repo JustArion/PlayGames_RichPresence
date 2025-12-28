@@ -1,4 +1,4 @@
-﻿#define LISTEN_TO_RPCS
+﻿// #define LISTEN_TO_RPCS
 using Dawn.PlayGames.RichPresence.Logging;
 using DiscordRPC;
 using DiscordRPC.Message;
@@ -111,7 +111,13 @@ public class RichPresenceHandler : IDisposable
                 InitializeClient(applicationId);
 
             if (presence != null)
-                Log.Information("Setting Rich Presence for {GameTitle}", presenceName);
+            {
+                // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
+                if (applicationId == _sessionApplicationId)
+                    Log.Information("Setting Rich Presence for {GameTitle}", presenceName);
+                else // We indicate with • that it's an official rich presence
+                    Log.Information("Setting Rich Presence for • {GameTitle}", presenceName);
+            }
 
             _currentPresence = presence;
             _client?.SetPresence(presence);
@@ -127,7 +133,7 @@ public class RichPresenceHandler : IDisposable
         {
             if (_currentPresence != null)
             {
-                Log.Information("Clearing Rich Presence for {AppName}", _currentPresence.Details ?? presenceName);
+                Log.Debug("Clearing Rich Presence for {AppName}", _currentPresence.Details ?? presenceName);
                 _currentPresence = null;
             }
 
