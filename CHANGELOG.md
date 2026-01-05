@@ -70,7 +70,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [1.0.0] / 2024-10-08
 - ⚡️Initial release!
 
-[Development]: https://github.com/JustArion/MuMu_RichPresence/compare/v2.0.0...HEAD
+[Development]: https://github.com/JustArion/PlayGames_RichPresence/compare/v2.0.0...HEAD
 [2.0.0]: https://github.com/JustArion/PlayGames_RichPresence/compare/v1.5.1...v2.0.0
 [1.5.1]: https://github.com/JustArion/PlayGames_RichPresence/compare/v1.5.0...v1.5.1
 [1.5.0]: https://github.com/JustArion/PlayGames_RichPresence/compare/v1.4.0...v1.5.0
