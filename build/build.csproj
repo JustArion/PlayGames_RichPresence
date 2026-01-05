@@ -16,8 +16,4 @@
         <PackageReference Include="Nuke.Common" Version="10.1.0" />
         <PackageReference Include="Nuke.Components" Version="10.1.0" />
     </ItemGroup>
-
-    <ItemGroup>
-      <None Remove="..\.github\workflows\ci-release.yml" />
-    </ItemGroup>
 </Project>

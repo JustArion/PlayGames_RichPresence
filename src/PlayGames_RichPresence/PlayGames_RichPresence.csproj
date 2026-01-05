@@ -15,7 +15,7 @@
 
     <RootNamespace>Dawn.PlayGames.RichPresence</RootNamespace>
     <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
-    <Copyright>https://github.com/JustArion/MuMu_RichPresence/#GPL-2.0-1-ov-file</Copyright>
+    <Copyright>GPL-2.0</Copyright>
 
     <!-- This is so that CI can cache nuget dependencies -->
     <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
