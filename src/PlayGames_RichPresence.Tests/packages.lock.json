@@ -41,11 +41,10 @@
       },
       "NUnit3TestAdapter": {
         "type": "Direct",
-        "requested": "[6.0.0, )",
-        "resolved": "6.0.0",
-        "contentHash": "b04OV4wps6C5nDq1JZBGJjN8XimfN8P/06EqhssG+YuPAsH8TwIpAc8tnJtovdgsm7Wppt7aRzCUYOpuYSYzzg==",
+        "requested": "[6.1.0, )",
+        "resolved": "6.1.0",
+        "contentHash": "H4zRIkiGyPa7RpApzXwan5vpZzu4ZDIzuKNlHFiDjOt5Irq4Y5j8r1SA7Oeo0yFCUyfiY7Jy2DTl8RnFZwpKNA==",
         "dependencies": {
-          "Microsoft.Extensions.DependencyModel": "10.0.0",
           "Microsoft.Testing.Extensions.VSTestBridge": "2.0.2",
           "Microsoft.Testing.Platform.MSBuild": "2.0.2"
         }
@@ -337,7 +336,7 @@
         "type": "Project",
         "dependencies": {
           "Dawn.WinForms.ContextMenu": "[1.0.0, )",
-          "DiscordRichPresence": "[1.5.0.51, )",
+          "DiscordRichPresence": "[1.5.0.51, 1.5.0.51]",
           "DynamicData": "[9.4.1, )",
           "Polly": "[8.6.5, )",
           "Serilog": "[4.3.0, )",
