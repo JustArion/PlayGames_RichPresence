@@ -9,19 +9,14 @@
 #
 #     - To trigger manual generation invoke:
 #
-#         nuke --generate-configuration GitHubActions_CI_Build --host GitHubActions
+#         nuke --generate-configuration GitHubActions_Run_Tests --host GitHubActions
 #
 # </auto-generated>
 # ------------------------------------------------------------------------------
 
-name: CI_Build
+name: Run_Tests
 
-on:
-  workflow_dispatch:
-    inputs:
-      Version:
-        description: "Version"
-        required: false
+on: [workflow_dispatch]
 
 jobs:
   windows-latest:
@@ -30,24 +25,12 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          submodules: recursive
+          lfs: true
       - name: 'Cache: ~/.nuget/packages'
         uses: actions/cache@v4
         with:
           path: |
             ~/.nuget/packages
           key: ${{ runner.os }}-${{ hashFiles('**/global.json', '**/*.csproj', '**/Directory.Packages.props', '**/packages.lock.json') }}
-      - name: 'Run: Velopack'
-        run: ./build.cmd Velopack
-        env:
-          Version: ${{ github.event.inputs.Version }}
-      - name: 'Publish: bin'
-        uses: actions/upload-artifact@v5
-        with:
-          name: bin
-          path: bin
-      - name: 'Publish: velopack'
-        uses: actions/upload-artifact@v5
-        with:
-          name: velopack
-          path: velopack
+      - name: 'Run: Test'
+        run: ./build.cmd Test
