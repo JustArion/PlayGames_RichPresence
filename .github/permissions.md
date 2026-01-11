@@ -17,6 +17,7 @@
             - The "File System Watcher" watches for changes on `Service.log` only
         - Reads a single registry key (`\HKCU\Software\Microsoft\Windows\CurrentVersion\Run\PlayGames RichPresence`)
             - Run on Startup
+        - Reads the first `.env` file it finds in either the current `.exe` directory or in its parent's (recursively)
 - `Network`
     - `Download Access`
         - _Can_ download updates from `https://github.com/JustArion/PlayGames_RichPresence`
