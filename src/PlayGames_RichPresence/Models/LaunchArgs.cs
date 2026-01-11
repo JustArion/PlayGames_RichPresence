@@ -5,25 +5,25 @@ namespace Dawn.PlayGames.RichPresence.Models;
 [SuppressMessage("ReSharper", "InvertIf")]
 public struct LaunchArgs
 {
-    internal const string RP_DISABLED_ON_START = "--rp-disabled-on-start";
-    internal const string HIDE_TRAY_ICON_ON_START = "--hide-tray-icon-on-start";
+    internal const string RP_DISABLED_ON_START = "RP Disabled On Start";
+
     public LaunchArgs(string[] args)
     {
         RawArgs = args;
         CommandLine = string.Join(" ", args);
-        RichPresenceDisabledOnStart = args.Contains(RP_DISABLED_ON_START);
-        ExtendedLogging  = args.Contains("--extended-logging");
-        NoFileLogging = args.Contains("--no-file-logging");
-        NoAutoUpdate = args.Contains("--no-auto-update");
-        HideTrayIconOnStart = args.Contains(HIDE_TRAY_ICON_ON_START);
+        RichPresenceDisabledOnStart = Contains(RP_DISABLED_ON_START, args);
+        ExtendedLogging = Contains("Extended Logging", args);
+        NoFileLogging = Contains("No File Logging", args);
+        NoAutoUpdate = Contains("No Auto Update", args);
+        HideTrayIconOnStart = Contains("Hide Tray Icon On Start", args);
 
-        CustomApplicationId = ExtractArgumentValue("--custom-application-id=", args);
+        CustomApplicationId = ExtractArgumentValue("Custom Application ID", args);
         HasCustomApplicationId = !string.IsNullOrWhiteSpace(CustomApplicationId);
 
-        CustomSeqUrl = ExtractArgumentValue("--seq-url=", args);
+        CustomSeqUrl = ExtractArgumentValue("SEQ URL", args);
         HasCustomSeqUrl = Uri.TryCreate(CustomSeqUrl, UriKind.Absolute, out _);
 
-        if (int.TryParse(ExtractArgumentValue("--bind-to=", args), out var pid))
+        if (int.TryParse(ExtractArgumentValue("Bind To", args), out var pid))
         {
             ProcessBinding = pid;
             HasProcessBinding = true;
@@ -50,15 +50,19 @@ public struct LaunchArgs
     public int ProcessBinding { get; }
     // ---
 
-    private string ExtractArgumentValue(string argumentKey, string[] args)
+    private static string ExtractArgumentValue(string argumentKey, string[] args)
     {
-        var rawrArgument = args.FirstOrDefault(x => x.StartsWith(argumentKey));
+        argumentKey = ToKebabCase(argumentKey);
+        var rawArgument = args.FirstOrDefault(x => x.StartsWith($"--{argumentKey}="));
 
-        if (string.IsNullOrWhiteSpace(rawrArgument))
-            return string.Empty;
+        if (string.IsNullOrWhiteSpace(rawArgument))
+            return Environment.GetEnvironmentVariable(argumentKey) ?? string.Empty;
 
-        var keyValue = rawrArgument.Split('=');
+        var keyValue = rawArgument.Split('=');
 
         return keyValue.Length > 1 ? keyValue[1] : string.Empty;
     }
+
+    private static bool Contains(string key, string[] cliArgs) => cliArgs.Contains($"--{key = ToKebabCase(key)}") || Environment.GetEnvironmentVariable(key) is not null;
+    internal static string ToKebabCase(string str) => str.ToLower().Replace(' ', '-');
 }

@@ -54,6 +54,7 @@
   </ItemGroup>
 
   <ItemGroup Label="Other Packages">
+    <PackageReference Include="DotNetEnv" Version="3.1.1" />
     <PackageReference Include="DynamicData" Version="9.4.1" />
     <PackageReference Include="Vanara.PInvoke.Kernel32" Version="4.2.1" />
 

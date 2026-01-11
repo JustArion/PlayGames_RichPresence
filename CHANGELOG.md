@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 🦺 Our build pipeline is now run through [NUKE](https://nuke.build)!
     - This allows me to focus less on the administrative side of releases and more on actually writing code
     - From a user perspective, nothing changes
+- ⚡️Added support for `.env` files
 
 ## [2.0.0] / 2025-12-23
 - ⚡️Rich Presences now have clickable links directing them to the respective game's listing on the Play Store
