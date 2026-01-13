@@ -53,7 +53,7 @@ public struct LaunchArgs
     private static string ExtractArgumentValue(string argumentKey, string[] args)
     {
         argumentKey = ToKebabCase(argumentKey);
-        var rawArgument = args.FirstOrDefault(x => x.StartsWith($"--{argumentKey}="));
+        var rawArgument = args.FirstOrDefault(x => x.StartsWith($"--{argumentKey}=", StringComparison.InvariantCultureIgnoreCase));
 
         if (string.IsNullOrWhiteSpace(rawArgument))
             return Environment.GetEnvironmentVariable(argumentKey) ?? string.Empty;
@@ -63,6 +63,6 @@ public struct LaunchArgs
         return keyValue.Length > 1 ? keyValue[1] : string.Empty;
     }
 
-    private static bool Contains(string key, string[] cliArgs) => cliArgs.Contains($"--{key = ToKebabCase(key)}") || Environment.GetEnvironmentVariable(key) is not null;
+    private static bool Contains(string key, string[] cliArgs) => cliArgs.Contains($"--{key = ToKebabCase(key)}", StringComparer.InvariantCultureIgnoreCase) || Environment.GetEnvironmentVariable(key) is not null;
     internal static string ToKebabCase(string str) => str.ToLower().Replace(' ', '-');
 }
