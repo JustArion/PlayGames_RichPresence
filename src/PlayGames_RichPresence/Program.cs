@@ -213,7 +213,7 @@ internal static class Program
                 ClearPresenceFor(sessionInfo);
                 break;
             default:
-                throw new ArgumentOutOfRangeException();
+                throw new ArgumentOutOfRangeException(nameof(sessionInfo));
         }
     }
 
