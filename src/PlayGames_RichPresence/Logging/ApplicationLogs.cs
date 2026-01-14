@@ -1,10 +1,10 @@
 ﻿using System.Runtime.Versioning;
+using Dawn.PlayGames.RichPresence.Logging.Serilog;
+using Dawn.PlayGames.RichPresence.Logging.Serilog.Themes;
 
 namespace Dawn.PlayGames.RichPresence.Logging;
 
 using global::Serilog.Events;
-using Serilog.CustomEnrichers;
-using Serilog.Themes;
 
 internal static class ApplicationLogs
 {

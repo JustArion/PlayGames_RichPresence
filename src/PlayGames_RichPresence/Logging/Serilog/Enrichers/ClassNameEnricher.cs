@@ -1,9 +1,9 @@
 ﻿#nullable enable
-namespace Dawn.Serilog.CustomEnrichers;
-
 using System.Diagnostics;
-using global::Serilog.Core;
-using global::Serilog.Events;
+using Serilog.Core;
+using Serilog.Events;
+
+namespace Dawn.PlayGames.RichPresence.Logging.Serilog.Enrichers;
 
 public class ClassNameEnricher : ILogEventEnricher
 {

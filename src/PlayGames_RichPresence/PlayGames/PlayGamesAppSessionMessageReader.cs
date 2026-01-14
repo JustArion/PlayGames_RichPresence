@@ -1,7 +1,8 @@
 ﻿// #define LOG_APP_SESSION_MESSAGES
+
+using Dawn.PlayGames.RichPresence.Logging.Serilog;
 using Dawn.PlayGames.RichPresence.Models;
-using Dawn.PlayGames.RichPresence.PlayGames.Tools;
-using Dawn.Serilog.CustomEnrichers;
+using Dawn.PlayGames.RichPresence.Tools;
 
 namespace Dawn.PlayGames.RichPresence.PlayGames;
 

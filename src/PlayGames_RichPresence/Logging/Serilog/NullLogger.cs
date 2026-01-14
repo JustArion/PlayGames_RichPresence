@@ -1,6 +1,6 @@
 ﻿using Serilog.Events;
 
-namespace Dawn.Serilog.CustomEnrichers;
+namespace Dawn.PlayGames.RichPresence.Logging.Serilog;
 
 public sealed class NullLogger : ILogger
 {
