@@ -1,9 +1,10 @@
-﻿namespace Dawn.PlayGames.RichPresence.Logging;
-
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using DiscordRPC.Logging;
-using global::Serilog.Core;
-using ILogger = ILogger;
+using Serilog.Core;
+
+namespace Dawn.PlayGames.RichPresence.Discord;
+
+using ILogger = Serilog.ILogger;
 #pragma warning disable CA2254
 
 [SuppressMessage("ReSharper", "TemplateIsNotCompileTimeConstantProblem")]
