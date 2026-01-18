@@ -5,9 +5,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Development]
-- 🦺 Our build pipeline is now run through [NUKE](https://nuke.build)!
-    - This allows me to focus less on the administrative side of releases and more on actually writing code
-    - From a user perspective, nothing changes
 - ⚡️Added support for `.env` files
 
 ## [2.0.0] / 2025-12-23
