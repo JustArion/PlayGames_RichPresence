@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Development]
 - ⚡️Added support for `.env` files
+  - Place a file called `.env` in either the MuMu_RichPresence Directory or it's parent
 
 ## [2.0.0] / 2025-12-23
 - ⚡️Rich Presences now have clickable links directing them to the respective game's listing on the Play Store
