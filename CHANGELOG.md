@@ -7,11 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Development]
 - ⚡️Added support for `.env` files
   - Place a file called `.env` in either the MuMu_RichPresence Directory or it's parent
+- ⚡️Added opening the log file as a tray option if ExtendedLogging is enabled
 
 ## [2.0.0] / 2025-12-23
 - ⚡️Rich Presences now have clickable links directing them to the respective game's listing on the Play Store
 - ⚡️Now shows the game you're playing in the members / direct message list instead of "Google Play Games"
-    - This is different than the change below. The one below uses Rich Presences made by Discord, this change uses Rich Presences made by Play Games Rich Presence (If no official rich presence is detected)
+    - This is different from the change below. The one below uses Rich Presences made by Discord, this change uses Rich Presences made by Play Games Rich Presence (If no official rich presence is detected)
 - ⚡️Most games will now show "Playing \<game name>" instead of normally "Playing Google Play Games"
     - Discord has added a ton of mobile games to their "Official Presences" list, which we now also use if we detect any of them!
     - We save a list of these "Official Presences" instead of asking Discord for them every time (`detectable.json`)

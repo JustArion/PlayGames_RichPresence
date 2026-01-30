@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using Dawn.PlayGames.RichPresence.Models;
 using Dawn.PlayGames.RichPresence.Tools;
 
@@ -8,11 +10,11 @@ using WinForms.ContextMenu;
 
 public class RichPresence_Tray
 {
+    private readonly BehaviorSubject<FileInfo?> _logFile;
     internal NotifyIcon Tray { get; private set; }
-    private readonly string _serviceLogFilePath;
-    public RichPresence_Tray(string serviceLogFilePath)
+    public RichPresence_Tray(BehaviorSubject<FileInfo?> logFile)
     {
-        _serviceLogFilePath = serviceLogFilePath;
+        _logFile = logFile;
         Tray = new();
 
         Tray.Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
@@ -27,17 +29,19 @@ public class RichPresence_Tray
         AddStripItems(Tray.ContextMenuStrip.Items);
     }
 
-    private static void StartProcess(Action start)
+    private static void WrapTask(Action start)
     {
-        try
+        Task.Run(() =>
         {
-            start();
-        }
-        catch (Exception e)
-        {
-            Log.Error(e, "Failed to start process");
-        }
-
+            try
+            {
+                start();
+            }
+            catch (Exception e)
+            {
+                Log.Error(e, "Failed to start process");
+            }
+        });
     }
 
     private void AddStripItems(ToolStripItemCollection items)
@@ -45,15 +49,24 @@ public class RichPresence_Tray
         items.AddRange(Header());
         try
         {
+            items.Add("Open App Directory", null, (_, _) => WrapTask(()=> Process.Start("explorer", $"/select,\"{Application.ExecutablePath}\"")));
+
             if (Arguments.ExtendedLogging)
             {
                 Log.Information("Adding extended logging items");
-                items.Add("Open App Directory", null, (_, _) => StartProcess(()=> Process.Start("explorer", $"/select,\"{Application.ExecutablePath}\"")));
-                items.Add("Open Log File", null, (_, _) =>
+                var openLogFileItem = new ToolStripMenuItem("Open Log File", null, (_, _) =>
                 {
-                    if (File.Exists(_serviceLogFilePath))
-                        StartProcess(()=> Process.Start("explorer", _serviceLogFilePath));
+                    WrapTask(() =>
+                    {
+                        if (_logFile.Value is { } fileInfo)
+                            WrapTask(()=> Process.Start(new ProcessStartInfo(fileInfo.FullName) { UseShellExecute = true }));
+                    });
                 });
+                openLogFileItem.Enabled = _logFile.Value?.Exists ?? false;
+                _logFile
+                    .ObserveOn(SynchronizationContext.Current!)
+                    .Subscribe(info => openLogFileItem.Enabled = info?.Exists ?? false);
+                items.Add(openLogFileItem);
             }
             items.Add(Enabled());
             items.Add(RunOnStartup());
