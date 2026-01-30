@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Reactive.Subjects;
 using Dawn.PlayGames.RichPresence.Discord;
+using DynamicData.Binding;
 using NuGet.Versioning;
 using Velopack;
 
@@ -16,15 +17,16 @@ using Tray;
 internal static class Program
 {
     internal static LaunchArgs Arguments { get; private set; }
+    internal static ApplicationFeatures Features { get; } = new();
 
     private static RichPresence_Tray _trayIcon = null!;
-    private static RichPresenceHandler _richPresenceHandler = null!;
+    private static RichPresenceHandler? _richPresenceHandler;
     private static DiscoverabilityHandler _discoverabilityHandler = null!;
     private static ProcessBinding? _processBinding;
     private const string FILE_PATH = @"Google\Play Games\Logs\Service.log";
     private static readonly FileInfo _filePath = new(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), FILE_PATH));
     private const string DEV_FILE_PATH = @"Google\Play Games Developer Emulator\Logs\Service.log";
-    private static readonly FileInfo _devFilePath = new FileInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), DEV_FILE_PATH));
+    private static readonly FileInfo _devFilePath = new(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), DEV_FILE_PATH));
 
     [STAThread]
     private static void Main(string[] args)
@@ -59,7 +61,8 @@ internal static class Program
         var devReader = new PlayGamesAppSessionMessageReader(_devFilePath);
 
         _trayIcon = new(new(_filePath));
-        _trayIcon.RichPresenceEnabledChanged += OnRichPresenceEnabledChanged;
+        Features.WhenPropertyChanged(x => x.RichPresenceEnabled)
+            .Subscribe(OnRichPresenceEnabledChanged);
         _discoverabilityHandler = new();
 
         reader.OnSessionInfoReceived += SessionInfoReceived;
@@ -97,12 +100,27 @@ internal static class Program
         }
     }
 
-    private static void OnRichPresenceEnabledChanged(object? sender, bool active)
+    private static async Task CoercePresenceToCurrentSession(PlayGamesSessionInfo sessionInfo)
     {
+        await SetPresenceFor(sessionInfo, new() { Timestamps = new(sessionInfo.StartTime.DateTime) });
+        Log.Debug("Presence coerced for {SessionTitle}", sessionInfo);
+    }
+
+    private static void OnRichPresenceEnabledChanged(PropertyValue<ApplicationFeatures, bool> pvc)
+    {
+        if (_richPresenceHandler == null)
+            return;
+
+        var active = pvc.Value;
         if (active)
         {
             if (_currentPresence is not { } presence)
+            {
+                if (_currentSessionInfo != null)
+                    Task.Run(async ()=> await CoercePresenceToCurrentSession(_currentSessionInfo));
                 return;
+            }
+
             if (_currentSessionInfo is not { } sessionInfo)
             {
                 Log.Error("Trying to set a rich presence without an associated lifetime! Known details are: AppId: {AppId}, Details: {Details}", _currentApplicationId, presence.Details);
@@ -114,7 +132,6 @@ internal static class Program
         }
 
         _richPresenceHandler.ClearPresence(_currentSessionInfo?.Title);
-        _currentSessionInfo = null;
     }
 
     private static CancellationTokenSource _cts = new();
@@ -222,6 +239,9 @@ internal static class Program
 
     private static void ClearPresenceFor(PlayGamesSessionInfo sessionInfo)
     {
+        if (_richPresenceHandler == null)
+            return;
+
         if (Interlocked.Exchange(ref _currentPresence, null) == null)
             return;
 
@@ -234,6 +254,9 @@ internal static class Program
     private static RichPresence? _currentPresence;
     private static async Task SetPresenceFor(PlayGamesSessionInfo sessionInfo, RichPresence presence)
     {
+        if (_richPresenceHandler == null)
+            return;
+
         _currentPresence = presence;
         var scrapedInfo = await PlayStoreWebScraper.TryGetPackageInfo(sessionInfo.PackageName);
         var iconUrl = scrapedInfo?.IconLink ?? string.Empty;

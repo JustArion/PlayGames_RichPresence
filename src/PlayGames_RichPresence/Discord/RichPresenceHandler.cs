@@ -62,8 +62,10 @@ public class RichPresenceHandler : IDisposable
         {
             using var timer = new PeriodicTimer(TimeSpan.FromSeconds(5));
 
-            while (await timer.WaitForNextTickAsync(token) && ApplicationFeatures.GetFeature(x => x.RichPresenceEnabled))
+            while (await timer.WaitForNextTickAsync(token) && Features.RichPresenceEnabled)
                 _client?.SetPresence(CurrentPresence);
+
+            Log.Debug("Finishing up polling");
         }, TaskCreationOptions.LongRunning, token);
     }
 
@@ -101,7 +103,7 @@ public class RichPresenceHandler : IDisposable
     {
         lock (_sync)
         {
-            if (!ApplicationFeatures.GetFeature(x => x.RichPresenceEnabled) || CurrentPresence == presence)
+            if (!Features.RichPresenceEnabled || CurrentPresence == presence)
             {
                 Log.Verbose("Rich Presence is disabled");
                 return false;

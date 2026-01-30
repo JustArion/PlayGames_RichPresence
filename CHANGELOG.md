@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ⚡️Added support for `.env` files
   - Place a file called `.env` in either the MuMu_RichPresence Directory or it's parent
 - ⚡️Added opening the log file as a tray option if ExtendedLogging is enabled
+- 🦺 Bugfix: Toggling the Rich Presence from the tray would not re-enable the presence under certain circumstances
 
 ## [2.0.0] / 2025-12-23
 - ⚡️Rich Presences now have clickable links directing them to the respective game's listing on the Play Store
