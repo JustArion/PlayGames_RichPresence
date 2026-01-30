@@ -8,7 +8,7 @@ namespace Dawn.PlayGames.RichPresence.PlayGames;
 
 using System.Text;
 
-public class PlayGamesAppSessionMessageReader(string filePath) : IDisposable
+public class PlayGamesAppSessionMessageReader(FileInfo filePath) : IDisposable
 {
     private bool _started;
     private long _lastStreamPosition;
@@ -30,7 +30,7 @@ public class PlayGamesAppSessionMessageReader(string filePath) : IDisposable
         Log.Verbose("Doing fresh read-operation pass on file {Path}", filePath);
 
         // Wait till the file exists
-        if (!File.Exists(filePath))
+        if (!filePath.Exists)
         {
             Log.Debug("File not found: Service.log");
             await Task.Delay(TimeSpan.FromSeconds(5));
@@ -43,7 +43,7 @@ public class PlayGamesAppSessionMessageReader(string filePath) : IDisposable
             _reading = true;
             try
             {
-                if (File.Exists(filePath))
+                if (filePath.Exists)
                 {
                     await using var fileLock = AquireFileLock();
                     await CatchUpAsync(fileLock);

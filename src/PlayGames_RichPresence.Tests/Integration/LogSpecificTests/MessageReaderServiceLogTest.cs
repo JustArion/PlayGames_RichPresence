@@ -9,7 +9,7 @@ public class LogSpecificMessageReaderTests
     [SetUp]
     public void SetUp()
     {
-        _sut = new PlayGamesAppSessionMessageReader("Assets/Service.log");
+        _sut = new PlayGamesAppSessionMessageReader(new("Assets/Service.log"));
     }
     private PlayGamesAppSessionMessageReader _sut;
 

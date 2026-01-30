@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Reactive.Subjects;
 using Dawn.PlayGames.RichPresence.Discord;
 using NuGet.Versioning;
 using Velopack;
@@ -21,9 +22,9 @@ internal static class Program
     private static DiscoverabilityHandler _discoverabilityHandler = null!;
     private static ProcessBinding? _processBinding;
     private const string FILE_PATH = @"Google\Play Games\Logs\Service.log";
-    private static readonly string _filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), FILE_PATH);
+    private static readonly FileInfo _filePath = new(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), FILE_PATH));
     private const string DEV_FILE_PATH = @"Google\Play Games Developer Emulator\Logs\Service.log";
-    private static readonly string _devFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), DEV_FILE_PATH);
+    private static readonly FileInfo _devFilePath = new FileInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), DEV_FILE_PATH));
 
     [STAThread]
     private static void Main(string[] args)
@@ -57,7 +58,7 @@ internal static class Program
         var reader = new PlayGamesAppSessionMessageReader(_filePath);
         var devReader = new PlayGamesAppSessionMessageReader(_devFilePath);
 
-        _trayIcon = new(_filePath);
+        _trayIcon = new(new(_filePath));
         _trayIcon.RichPresenceEnabledChanged += OnRichPresenceEnabledChanged;
         _discoverabilityHandler = new();
 

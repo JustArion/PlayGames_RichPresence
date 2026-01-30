@@ -3,10 +3,9 @@
 public class PlayGamesLogWatcher : IDisposable
 {
     private FileSystemWatcher? _logFileWatcher;
-    public PlayGamesLogWatcher(string filePath)
+    public PlayGamesLogWatcher(FileInfo filePath)
     {
-        var fi = new FileInfo(filePath);
-        if (fi.Directory is { Exists: true })
+        if (filePath.Directory is { Exists: true })
         {
             Log.Information("'{LogPath}' is present, will start watching", filePath);
             CreateLogWatcher(filePath);
@@ -17,7 +16,7 @@ public class PlayGamesLogWatcher : IDisposable
 
         Task.Factory.StartNew(async () =>
         {
-            while (fi.Directory is not { Exists: true })
+            while (filePath.Directory is not { Exists: true })
                 await Task.Delay(TimeSpan.FromMinutes(1));
 
             if (_initializationSubscription != null)
@@ -39,11 +38,11 @@ public class PlayGamesLogWatcher : IDisposable
         }, TaskCreationOptions.LongRunning);
     }
 
-    private void CreateLogWatcher(string filePath)
+    private void CreateLogWatcher(FileInfo filePath)
     {
         _logFileWatcher = new();
-        _logFileWatcher.Path = Path.GetDirectoryName(filePath)!;
-        _logFileWatcher.Filter = Path.GetFileName(filePath);
+        _logFileWatcher.Path = filePath.Directory?.FullName ?? ".";
+        _logFileWatcher.Filter = filePath.Name;
         _logFileWatcher.NotifyFilter = NotifyFilters.LastWrite;
         _logFileWatcher.Changed += (_, args) => FileChanged?.Invoke(this, args);
         _logFileWatcher.Error += (_, args) => Error?.Invoke(this, args);

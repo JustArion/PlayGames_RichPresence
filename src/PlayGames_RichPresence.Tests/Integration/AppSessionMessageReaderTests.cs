@@ -8,12 +8,12 @@ public class AppSessionMessageReaderTests
 {
     private static readonly PlayGamesAppSessionMessageReader[] _readers = 
     [
-        new("Assets/Service.log"),
-        new("Assets/Additional/Service.1.log"),
-        new("Assets/Additional/Service.2.log"),
-        new("Assets/Service - Developer.log"),
-        new("Assets/Additional/Service.dev.1.log"),
-        new("Assets/Additional/Service.3.log"),
+        new(new("Assets/Service.log")),
+        new(new("Assets/Additional/Service.1.log")),
+        new(new("Assets/Additional/Service.2.log")),
+        new(new("Assets/Service - Developer.log")),
+        new(new("Assets/Additional/Service.dev.1.log")),
+        new(new("Assets/Additional/Service.3.log")),
     ];
 
     [TearDown]

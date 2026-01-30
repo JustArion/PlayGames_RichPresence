@@ -9,7 +9,7 @@ public class DevLogSpecificMessageReaderTests
     [SetUp]
     public void SetUp()
     {
-        _sut = new PlayGamesAppSessionMessageReader("Assets/Service - Developer.log");
+        _sut = new PlayGamesAppSessionMessageReader(new("Assets/Service - Developer.log"));
     }
     private PlayGamesAppSessionMessageReader _sut;
 
