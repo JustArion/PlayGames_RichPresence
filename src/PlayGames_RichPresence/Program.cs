@@ -52,9 +52,8 @@ internal static class Program
 
         ApplicationLogs.ListenToEvents();
 
-        if (!Arguments.NoAutoUpdate)
+        if (Arguments.AutoUpdate)
             Task.Run(AutoUpdate.CheckForUpdates);
-
 
         _richPresenceHandler = new();
         var reader = new PlayGamesAppSessionMessageReader(_filePath);

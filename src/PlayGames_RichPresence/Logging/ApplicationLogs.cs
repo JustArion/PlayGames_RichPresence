@@ -48,7 +48,7 @@ internal static class ApplicationLogs
                 .WriteTo.Console(outputTemplate: LOGGING_FORMAT, theme: BlizzardTheme.GetTheme,
                     applyThemeToRedirectedOutput: true, standardErrorFromLevel: LogEventLevel.Error);
 
-            if (!Arguments.NoFileLogging)
+            if (Arguments.FileLogging)
                 config.WriteTo.File(Path.Combine(Environment.CurrentDirectory, $"{Application.ProductName}.log"),
                     outputTemplate: LOGGING_FORMAT,
                     restrictedToMinimumLevel: Arguments.ExtendedLogging
