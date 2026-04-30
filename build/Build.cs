@@ -221,9 +221,16 @@ class Build : NukeBuild, ICreateGitHubRelease, IHazArtifacts
 
     Target InstallOrUpdateVelopack => _ => _
         .Executes(() => 
-            DotNetToolUpdate(options => options
-            .EnableGlobal()
-            .SetPackageName("vpk")));
+        {
+            DotNetToolInstall(options => options
+                .AddProcessAdditionalArguments("--allow-roll-forward") // This fixes the Velopack tool being compiled for .NET 9 causing a dependency install prompt to appear.
+                .EnableGlobal()
+                .SetPackageName("vpk"));
+            
+            return DotNetToolUpdate(options => options
+                .EnableGlobal()
+                .SetPackageName("vpk"));
+        });
     
     [SuppressMessage("ReSharper", "UnusedMember.Local")]
     Target Clean => _ => _
