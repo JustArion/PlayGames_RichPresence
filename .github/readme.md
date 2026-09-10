@@ -66,7 +66,7 @@
 `& '.\PlayGames RichPresence.exe' --extended-logging --seq-url=http://localhost:9999`
 
 You can also provide a `.env` file in the PlayGames_RichPresence's directory or it's parent folders.<br/>
-For the Setup version of Velopack, it's recommended to place the `.env` file in the parent directory (`%AppData%\Local\PlayGames-RichPresence\`) since every update wipes everything in the `%AppData%\Local\MuMu-RichPresence\current` folder
+For the Setup version of Velopack, it's recommended to place the `.env` file in the parent directory (`%AppData%\Local\PlayGames-RichPresence\`) since every update wipes everything in the `%AppData%\Local\PlayGames-RichPresence\current` folder
 
 `.env` file example:
 ```env
@@ -89,12 +89,23 @@ Enabling `Run on Startup` clones the current launch arguments and runs it as tha
 
 ### Permanently hiding the Tray Icon
 
-There's currently no UI option to hide it permanently, but you can do so via the command line
-- Open up PowerShell and paste this in
+There's currently no UI option to hide it permanently, but you can add this [.env](./.env) file in the root folder of the program.
+The file tells `MuMu_RichPresence` to enable `hide-tray-icon-on-start` when starting up.
+
+#### How you can do this:
+
+Based on what version of the program you're using, do the following
+
+- Standalone & Portable
+    - Download and copy the [.env](./.env) file to your `PlayGames_RichPresence.exe` folder
+- Setup
+    - Download and copy the [.env](./.env) file to your `%AppData%\Local\PlayGames-RichPresence\` folder
+
+Alternatively you can run the following PowerShell script to achieve similar functionality!
 
 ```ps1
 $path = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'
-$key = 'MuMu RichPresence Standalone'
+$key = 'PlayGames RichPresence Standalone'
 $value = (Get-ItemProperty -Path $path).$key;
 Set-ItemProperty -Path $path -Name $key -Value ($value + ' --hide-tray-icon-on-start')
 ```
