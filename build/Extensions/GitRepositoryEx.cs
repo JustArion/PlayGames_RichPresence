@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Nuke.Common.Git;
+using Fallout.Common.Git;
 
 namespace Extensions;
 

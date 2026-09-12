@@ -9,22 +9,14 @@
 #
 #     - To trigger manual generation invoke:
 #
-#         fallout --generate-configuration GitHubActions_Manual_Release --host GitHubActions
+#         fallout --generate-configuration GitHubActions_Tests --host GitHubActions
 #
 # </auto-generated>
 # ------------------------------------------------------------------------------
 
-name: Manual_Release
+name: Tests
 
-on:
-  workflow_dispatch:
-    inputs:
-      Version:
-        description: "Version"
-        required: true
-
-permissions:
-  contents: write
+on: [workflow_dispatch]
 
 jobs:
   windows-latest:
@@ -33,7 +25,6 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          submodules: recursive
           lfs: true
       - name: 'Cache: ~/.nuget/packages'
         uses: actions/cache@v6
@@ -47,18 +38,5 @@ jobs:
           global-json-file: global.json
       - name: 'Restore: dotnet tools'
         run: dotnet tool restore
-      - name: 'Run: TaggedRelease'
-        run: dotnet fallout TaggedRelease
-        env:
-          Version: ${{ github.event.inputs.Version }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: 'Publish: bin'
-        uses: actions/upload-artifact@v7
-        with:
-          name: bin
-          path: bin
-      - name: 'Publish: velopack'
-        uses: actions/upload-artifact@v7
-        with:
-          name: velopack
-          path: velopack
+      - name: 'Run: Test'
+        run: dotnet fallout Test

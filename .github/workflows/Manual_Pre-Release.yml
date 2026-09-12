@@ -9,12 +9,12 @@
 #
 #     - To trigger manual generation invoke:
 #
-#         fallout --generate-configuration GitHubActions_Manual_Release --host GitHubActions
+#         fallout --generate-configuration GitHubActions_Manual_Pre-Release --host GitHubActions
 #
 # </auto-generated>
 # ------------------------------------------------------------------------------
 
-name: Manual_Release
+name: Manual_Pre-Release
 
 on:
   workflow_dispatch:
@@ -47,8 +47,8 @@ jobs:
           global-json-file: global.json
       - name: 'Restore: dotnet tools'
         run: dotnet tool restore
-      - name: 'Run: TaggedRelease'
-        run: dotnet fallout TaggedRelease
+      - name: 'Run: TaggedPreRelease'
+        run: dotnet fallout TaggedPreRelease
         env:
           Version: ${{ github.event.inputs.Version }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

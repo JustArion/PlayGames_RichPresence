@@ -1,9 +1,12 @@
+#nullable disable
 using System.Diagnostics.CodeAnalysis;
 using Extensions;
-using JetBrains.Annotations;
 
 [
-    GitHubActions("Run Tests", GitHubActionsImage.WindowsLatest, InvokedTargets = [nameof(Test)],        
+    GitHubActionsInput("Version", Required = false, Workflows = ["CI Build"]),
+    GitHubActionsInput("Version", Required = true, Workflows = ["Manual Pre-Release", "Manual Release"]),
+    
+    GitHubActions("Tests", GitHubActionsImage.WindowsLatest, InvokedTargets = [nameof(Test)],        
         On = [GitHubActionsTrigger.WorkflowDispatch],
         CacheIncludePatterns = ["~/.nuget/packages"],
         CacheKeyFiles = ["**/global.json", "**/*.csproj", "**/Directory.Packages.props", "**/packages.lock.json"],
@@ -11,8 +14,7 @@ using JetBrains.Annotations;
     GitHubActions("CI Build", GitHubActionsImage.WindowsLatest, InvokedTargets = [nameof(Velopack)], PublishArtifacts = true,
         Submodules = GitHubActionsSubmodules.Recursive,
         CacheIncludePatterns = ["~/.nuget/packages"],
-        CacheKeyFiles = ["**/global.json", "**/*.csproj", "**/Directory.Packages.props", "**/packages.lock.json"], 
-        OnWorkflowDispatchOptionalInputs = ["Version"]),
+        CacheKeyFiles = ["**/global.json", "**/*.csproj", "**/Directory.Packages.props", "**/packages.lock.json"]),
     GitHubActions("Release on Tag", 
         GitHubActionsImage.WindowsLatest,
         InvokedTargets = [nameof(TaggedRelease)],
@@ -37,6 +39,16 @@ using JetBrains.Annotations;
         Lfs = true,
         
         OnPushTags = ["p*"]),
+    GitHubActions("Manual Pre-Release", 
+        GitHubActionsImage.WindowsLatest, 
+        InvokedTargets = [nameof(TaggedPreRelease)],
+        EnableGitHubToken = true,
+        PublishArtifacts = true,
+        WritePermissions = [GitHubActionsPermissions.Contents],
+        Submodules = GitHubActionsSubmodules.Recursive,
+        CacheIncludePatterns = ["~/.nuget/packages"],
+        CacheKeyFiles = ["**/global.json", "**/*.csproj", "**/Directory.Packages.props", "**/packages.lock.json"],
+        Lfs = true),
     GitHubActions("Manual Release", 
         GitHubActionsImage.WindowsLatest, 
         InvokedTargets = [nameof(TaggedRelease)],
@@ -46,11 +58,9 @@ using JetBrains.Annotations;
         Submodules = GitHubActionsSubmodules.Recursive,
         CacheIncludePatterns = ["~/.nuget/packages"],
         CacheKeyFiles = ["**/global.json", "**/*.csproj", "**/Directory.Packages.props", "**/packages.lock.json"],
-        Lfs = true,
-        
-        OnWorkflowDispatchRequiredInputs = ["Version"])
+        Lfs = true)
 ]
-class Build : NukeBuild, ICreateGitHubRelease, IHazArtifacts
+class Build : FalloutBuild, ICreateGitHubRelease, IHasArtifacts
 {
     public static int Main ()
     {
@@ -65,7 +75,7 @@ class Build : NukeBuild, ICreateGitHubRelease, IHazArtifacts
         .OnlyWhenStatic(() => IsServerBuild)
         .Executes(async () =>
         {
-            // https://github.com/nuke-build/nuke/blob/develop/source/Nuke.Components/ICreateGitHubRelease.cs#L35
+            // https://github.com/Fallout-build/Fallout/blob/develop/src/Fallout.Components/ICreateGitHubRelease.cs#L36
             GitHubTasks.GitHubClient.Credentials = new(Actions.Token);
 
             var tag = Version ?? GetLatestTag();
@@ -98,7 +108,7 @@ class Build : NukeBuild, ICreateGitHubRelease, IHazArtifacts
         .OnlyWhenStatic(() => IsServerBuild)
         .Executes(async () =>
         {
-            // https://github.com/nuke-build/nuke/blob/develop/source/Nuke.Components/ICreateGitHubRelease.cs#L35
+            // https://github.com/Fallout-build/Fallout/blob/develop/src/Fallout.Components/ICreateGitHubRelease.cs#L36
             GitHubTasks.GitHubClient.Credentials = new(Actions.Token);
 
             var tag = Version ?? GetLatestTag();
@@ -253,7 +263,7 @@ class Build : NukeBuild, ICreateGitHubRelease, IHazArtifacts
         });
 
     // Parameters
-    [Optional, Parameter, CanBeNull] string Version;
+    [Optional, Parameter] string Version;
     [Optional, Parameter] string VelopackDotnetFrameworkVersion = "net10-x64-desktop";
     
     // Injected
@@ -261,7 +271,7 @@ class Build : NukeBuild, ICreateGitHubRelease, IHazArtifacts
     [GitRepository]
     GitRepository Repository;
     
-    [Solution(GenerateProjects = true)] 
+    [Fallout.Solutions.Solution(GenerateProjects = true)] 
     readonly Solution Solution;
     
     //
