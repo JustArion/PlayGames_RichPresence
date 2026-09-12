@@ -76,9 +76,8 @@ class Build : FalloutBuild, ICreateGitHubRelease, IHasArtifacts
             // https://github.com/Fallout-build/Fallout/blob/develop/src/Fallout.Components/ICreateGitHubRelease.cs#L36
             GitHubTasks.GitHubClient.Credentials = new(Actions.Token);
 
-            var tag = Version ?? GetLatestTag();
             var releases = GitHubTasks.GitHubClient.Repository.Release;
-            var release = await GetOrCreateRelease(tag, true);
+            var release = await GetOrCreateRelease(GetVersionTag(), true);
 
             var uploadTasks = AssetFiles.Select(async x =>
             {
@@ -109,9 +108,8 @@ class Build : FalloutBuild, ICreateGitHubRelease, IHasArtifacts
             // https://github.com/Fallout-build/Fallout/blob/develop/src/Fallout.Components/ICreateGitHubRelease.cs#L36
             GitHubTasks.GitHubClient.Credentials = new(Actions.Token);
 
-            var tag = Version ?? GetLatestTag();
             var releases = GitHubTasks.GitHubClient.Repository.Release;
-            var release = await GetOrCreateRelease(tag);
+            var release = await GetOrCreateRelease(GetVersion());
 
             var uploadTasks = AssetFiles.Select(async x =>
             {
@@ -130,14 +128,27 @@ class Build : FalloutBuild, ICreateGitHubRelease, IHasArtifacts
             
             Log.Information("All Assets uploaded!");
 
+            Execute<Build>(x => x.UpdateChangelog);
+            Execute<Build>(x => x.PushChangelog);
+        });
+    
+    Target UpdateChangelog => _ => _
+        .Unlisted()
+        .Executes(() =>
+        {
             var unreleasedNotes = ReadChangelog(ChangelogPath).Unreleased;
             var noNewChanges = unreleasedNotes?.EndIndex <= unreleasedNotes?.StartIndex;
             if (unreleasedNotes == null || noNewChanges)
                 return;
-            
+
             // Moves the changes in Unreleased to the latest tag
-            FinalizeChangelog(ChangelogPath, tag, Repository);
-            
+            FinalizeChangelog(ChangelogPath, GetVersion(), Repository);
+        });
+
+    Target PushChangelog => _ => _
+        .Unlisted()
+        .Executes(() =>
+        {
             var defaultBranch = Git("remote show origin")
                 .FirstOrDefault(x => x.Text.Trim().StartsWith("HEAD branch:"))
                 .Text.Split(':')[1]
@@ -147,7 +158,7 @@ class Build : FalloutBuild, ICreateGitHubRelease, IHasArtifacts
             Git($"config --global user.email {Quote("github-actions[bot]@users.noreply.github.com")}");
             
             Git($"add {ChangelogPath}");
-            Git($"commit -m {Quote($"chore: {Path.GetFileName(ChangelogPath)} for {tag}")}");
+            Git($"commit -m {Quote($"chore: {Path.GetFileName(ChangelogPath)} for {GetVersion()}")}");
             Git($"push origin HEAD:{defaultBranch}");
         });
 
@@ -197,7 +208,7 @@ class Build : FalloutBuild, ICreateGitHubRelease, IHasArtifacts
         {
             StartProcess("vpk", $"pack " +
                                        $"--packId PlayGames-RichPresence " +
-                                       $"-v {Version ?? GetLatestTag()} " +
+                                       $"-v {GetVersion()} " +
                                        $"--outputDir velopack " +
                                        $"--mainExe {Quote("PlayGames RichPresence Standalone.exe")} " +
                                        $"--packDir bin " +
@@ -224,7 +235,7 @@ class Build : FalloutBuild, ICreateGitHubRelease, IHasArtifacts
             DotNetPublish(options => options
             .SetProject(Solution.src.PlayGames_RichPresence)
             .SetRuntime(DotNetRuntimeIdentifier.win_x64)
-            .SetProperty("Version", Version ?? GetLatestTag())
+            .SetProperty("Version", GetVersion())
             .SetOutput(StandaloneDirectory)));
 
     Target InstallOrUpdateVelopack => _ => _
@@ -275,7 +286,7 @@ class Build : FalloutBuild, ICreateGitHubRelease, IHasArtifacts
     //
 
     private GitHubActions Actions => GitHubActions.Instance;
-    public string Name => Version ?? GetLatestTag();
+    public string Name => GetVersionTag();
     public IEnumerable<AbsolutePath> AssetFiles => StandaloneFiles.Concat(VelopackFiles);
     
     // Paths
@@ -294,10 +305,12 @@ class Build : FalloutBuild, ICreateGitHubRelease, IHasArtifacts
             "releases.win.json");
     
     // Extra Methods
-    private static readonly Func<string, bool> _versionPredicate = s => s.StartsWith('v') || s.StartsWith('p');
+    private string GetVersion() => StripPrefixes(GetVersionTag());
 
-    private string GetLatestTag() =>
-        (Repository.Tags?.FirstOrDefault(_versionPredicate) ?? GitRepository.GetTag(_versionPredicate)).TrimStart('v')
-        .TrimStart('p');
+    private string GetVersionTag() => Version ?? Repository.Tags?.FirstOrDefault(_versionPredicate) ?? GitRepository.GetTag(_versionPredicate); 
+    
+    private static readonly Func<string, bool> _versionPredicate = s => s.StartsWith('v') || s.StartsWith('p');
+    private static string StripPrefixes(string str) => str?.TrimStart('v').TrimStart('p');
+
     private static string Quote(string str) => $"\"{str}\"";
 }
