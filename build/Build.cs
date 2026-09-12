@@ -62,11 +62,9 @@ using Extensions;
 ]
 class Build : FalloutBuild, ICreateGitHubRelease, IHasArtifacts
 {
-    public static int Main ()
-    {
-        return Execute<Build>(x => x.Velopack);
-    }
-    
+    public Build() => NoLogo = true;
+    public static int Main () => Execute<Build>(x => x.Velopack);
+
     Target TaggedPreRelease => _ => _
         .DependsOn(Velopack)
         .DependsOn(Test)
