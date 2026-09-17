@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 🦺 Bugfix: Toggling the Rich Presence from the tray would not re-enable the presence under certain circumstances
 - ⚡ The Setup version of the program will now log to `%LocalAppData%\PlayGames-RichPresence\`
   - Previously logged to `%LocalAppData%\PlayGames-RichPresence\current\`
+- ⚡ Added tray option for opting into pre-release versions
+- ⚡ Now displays a quick restart button in the tray when there's a pending update
 
 ## [2.0.0] / 2025-12-23
 - ⚡️Rich Presences now have clickable links directing them to the respective game's listing on the Play Store

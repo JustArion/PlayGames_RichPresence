@@ -90,7 +90,7 @@ internal static class Program
             return;
 
         var wd = new DirectoryInfo(Environment.CurrentDirectory);
-        ApplicationLogs.Initialize(AutoUpdate.UpdateManager.Value is { IsInstalled: true, IsPortable: false }
+        ApplicationLogs.Initialize(AutoUpdate.UpdateManager is { IsInstalled: true, IsPortable: false }
             ? wd.Parent! // The setup version's persistent storage is in the parent directory (This would be %LocalAppData%/MuMu-RichPresence)
             : wd);
         _logsInitialized = true;

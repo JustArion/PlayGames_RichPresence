@@ -6,6 +6,7 @@ namespace Dawn.PlayGames.RichPresence.Models;
 public readonly struct LaunchArgs
 {
     internal const string RP_DISABLED_ON_START = "RP Disabled On Start";
+    internal const string CHECK_PRE_RELEASES = "Check Pre Releases";
 
     public LaunchArgs(string[] args)
     {
@@ -28,6 +29,7 @@ public readonly struct LaunchArgs
             ProcessBinding = pid;
             HasProcessBinding = true;
         }
+        CheckPreReleases = Contains(CHECK_PRE_RELEASES, args);
     }
 
     public IReadOnlyList<string> RawArgs { get; }
@@ -42,6 +44,7 @@ public readonly struct LaunchArgs
     public bool ExtendedLogging { get; init; }
     public bool NoAutoUpdate { get; }
     public bool AutoUpdate => !NoAutoUpdate;
+    public bool CheckPreReleases { get; }
     public bool HasCustomApplicationId { get; }
     public string CustomApplicationId { get; }
 

@@ -1,4 +1,5 @@
-﻿using Dawn.PlayGames.RichPresence.Logging;
+﻿using System.Reactive.Subjects;
+using Dawn.PlayGames.RichPresence.Logging;
 using Polly;
 using Polly.Retry;
 using Velopack;
@@ -15,8 +16,10 @@ internal static class AutoUpdate
         .Handle<Exception>()
         .WaitAndRetryAsync(MAX_RETRIES, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt) - 1));
 
-    public static readonly Lazy<UpdateManager> UpdateManager = new(() => new UpdateManager(new GithubSource($"https://github.com/JustArion/{REPO_NAME}", null, false)));
+    private static readonly Lazy<UpdateManager> LazyPreReleaseManager = new(() => new(new GithubSource($"https://github.com/JustArion/{REPO_NAME}", null, true)));
+    private static readonly Lazy<UpdateManager> LazyUpdateManager = new(() => new(new GithubSource($"https://github.com/JustArion/{REPO_NAME}", null, Arguments.CheckPreReleases)));
 
+    private static readonly SemaphoreSlim UpdateSemaphore = new(1, 1);
     /// <summary>
     /// Checks for updates with a retry policy of retrying 3 times, with the time between each retry expanding exponentially
     /// </summary>
@@ -27,9 +30,10 @@ internal static class AutoUpdate
     /// </returns>
     public static async Task CheckForUpdates()
     {
+        await UpdateSemaphore.WaitAsync();
         try
         {
-            var manager = UpdateManager.Value;
+            var manager = UpdateManager;
 
             if (manager.IsInstalled)
                 Log.Information("The Velopack Update Manager is present");
@@ -38,26 +42,36 @@ internal static class AutoUpdate
                 Log.Information("The Velopack Update Manager is not present");
                 return;
             }
+
             var response = await _retryPolicy.ExecuteAndCaptureAsync(async () => await manager.CheckForUpdatesAsync());
             if (response.Outcome == OutcomeType.Failure)
             {
                 Log.Error(response.FinalException, "Failed to check for updates");
                 return;
             }
-
-            var version = response.Result;
-            if (version == null)
+            if (response.Result is not { } update)
                 return;
 
-            await manager.DownloadUpdatesAsync(version);
+            HasPendingUpdate.OnNext(true);
 
-            Log.Information("Updates are ready to be installed and will be applied on next restart ({Version})",
-                version.TargetFullRelease.Version);
-            // manager.ApplyUpdatesAndRestart(version);
+            await manager.DownloadUpdatesAsync(update);
+
+            Log.Information("Updates are ready to be installed and will be applied on next restart ({Version})", update.TargetFullRelease.Version);
+            // manager.ApplyUpdatesAndRestart(update);
         }
         catch (Exception e)
         {
             Log.Error(e, "Failed to update using Velopack");
         }
+        finally
+        {
+            UpdateSemaphore.Release();
+        }
     }
+
+    public static readonly BehaviorSubject<bool> HasPendingUpdate = new(false);
+
+    public static UpdateManager UpdateManager => Features.CheckPreReleases
+        ? LazyPreReleaseManager.Value
+        : LazyUpdateManager.Value;
 }

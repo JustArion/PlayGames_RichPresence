@@ -13,12 +13,28 @@ using System.Runtime.CompilerServices;
 /// </summary>
 internal partial class ApplicationFeatures : ObservableObject
 {
-    public ApplicationFeatures() =>
+    public ApplicationFeatures()
+    {
         this.WhenPropertyChanged(x => x.RichPresenceEnabled)
             .Subscribe(value =>
-                Log.Verbose($"ApplicationFeature changed {nameof(RichPresenceEnabled)} ({{Value}})",  value.Value));
+                Log.Verbose($"ApplicationFeature changed {nameof(RichPresenceEnabled)} ({{Value}})", value.Value));
+
+        this.WhenPropertyChanged(x => CheckPreReleases)
+            .Subscribe(value =>
+                Log.Verbose($"ApplicationFeature changed {nameof(CheckPreReleases)} ({{Value}})", value.Value));
+    }
+
+    public void Sync()
+    {
+        CheckPreReleases = Arguments.CheckPreReleases;
+        RichPresenceEnabled = Arguments.RichPresenceEnabledOnStart;
+    }
 
     [ObservableProperty]
     [SuppressMessage("ReSharper", "MemberCanBeMadeStatic.Global")]
     public partial bool RichPresenceEnabled { get; set; }
+
+    [ObservableProperty]
+    [SuppressMessage("ReSharper", "MemberCanBeMadeStatic.Global")]
+    public partial bool CheckPreReleases { get; set; }
 }
