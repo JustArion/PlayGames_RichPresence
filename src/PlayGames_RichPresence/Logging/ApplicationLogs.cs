@@ -1,4 +1,5 @@
 ﻿using System.Runtime.Versioning;
+using Dawn.PlayGames.RichPresence.Extensions;
 using Dawn.PlayGames.RichPresence.Logging.Serilog;
 using Dawn.PlayGames.RichPresence.Logging.Serilog.Themes;
 
@@ -10,7 +11,8 @@ internal static class ApplicationLogs
 {
     static ApplicationLogs()
     {
-        AttachParent();
+        if (Console.Attach())
+            Console.WriteLine("[*] Attached Console to Parent");
 
         if (Console.IsOutputRedirected)
             return;
@@ -23,17 +25,12 @@ internal static class ApplicationLogs
         "{Level:u1} {Timestamp:yyyy-MM-dd HH:mm:ss.ffffff}   [{Source}] {Message:lj}{NewLine}{Exception}";
 
     #if RELEASE
+    // This is personal preference, but you can set your SEQ server to catch :9999 too.
+    // (Logs to nowhere if there's no SEQ server listening on port 9999
     private const string DEFAULT_SEQ_URL = "http://localhost:9999";
     #endif
 
-    [SupportedOSPlatform("windows")]
-    private static void AttachParent()
-    {
-        if (AttachConsole(ATTACH_PARENT_PROCESS))
-            Console.WriteLine("[*] Attached Console to Parent");
-    }
-
-    public static void Initialize()
+    public static void Initialize(DirectoryInfo logDirectory)
     {
         try
         {
@@ -49,7 +46,7 @@ internal static class ApplicationLogs
                     applyThemeToRedirectedOutput: true, standardErrorFromLevel: LogEventLevel.Error);
 
             if (Arguments.FileLogging)
-                config.WriteTo.File(Path.Combine(Environment.CurrentDirectory, $"{Application.ProductName}.log"),
+                config.WriteTo.File(Path.Combine(logDirectory.FullName, $"{Application.ProductName}.log"),
                     outputTemplate: LOGGING_FORMAT,
                     restrictedToMinimumLevel: Arguments.ExtendedLogging
                         ? LogEventLevel.Verbose
@@ -61,8 +58,6 @@ internal static class ApplicationLogs
                     : TimeSpan.FromSeconds(1));
 
             #if RELEASE
-            // This is personal preference, but you can set your Seq server to catch :9999 too.
-            // (Logs to nowhere if there's no Seq server listening on port 9999
             config.WriteTo.Seq(Arguments.HasCustomSeqUrl
                     ? Arguments.CustomSeqUrl
                     : DEFAULT_SEQ_URL,
@@ -81,13 +76,11 @@ internal static class ApplicationLogs
 
     internal static void ListenToEvents()
     {
-        AppDomain.CurrentDomain.UnhandledException +=
-            (_, eo) => Log.Fatal(eo.ExceptionObject as Exception, "Unhandled Exception");
+        AppDomain.CurrentDomain.UnhandledException += (_, eo) => Log.Fatal(eo.ExceptionObject as Exception, "Unhandled Exception");
 
-            #if !DEBUG
-            AppDomain.CurrentDomain.ProcessExit +=
-                (_, _) => Log.Information("Shutting Down...");
-            #endif
+        #if !DEBUG
+        AppDomain.CurrentDomain.ProcessExit += (_, _) => Log.Information("Shutting Down...");
+        #endif
 
         Log.Information("Initialized on version {ApplicationVersion}", Application.ProductVersion);
     }

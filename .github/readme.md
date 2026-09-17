@@ -34,7 +34,7 @@
     - Auto Update
     - Shortcut in Start Menu
     - Can be uninstalled by right-clicking uninstall in Start Menu
-    - Installed in `%appdata%/Local/PlayGames-RichPresence`
+    - Installed in `%LocalAppData%/PlayGames-RichPresence\`
 
 ---
 ### Previews
@@ -70,7 +70,7 @@
 `& '.\PlayGames RichPresence.exe' --extended-logging --seq-url=http://localhost:9999`
 
 You can also provide a `.env` file in the PlayGames_RichPresence's directory or it's parent folders.<br/>
-For the Setup version of Velopack, it's recommended to place the `.env` file in the parent directory (`%AppData%\Local\PlayGames-RichPresence\`) since every update wipes everything in the `%AppData%\Local\PlayGames-RichPresence\current` folder
+For the Setup version of Velopack, it's recommended to place the `.env` file in the parent directory (`%LocalAppData%\PlayGames-RichPresence\`) since every update wipes everything in the `%LocalAppData%\PlayGames-RichPresence\current` folder
 
 `.env` file example:
 ```env
@@ -103,7 +103,7 @@ Based on what version of the program you're using, do the following
 - Standalone & Portable
     - Download and copy the [.env](./.env) file to your `PlayGames_RichPresence.exe` folder
 - Setup
-    - Download and copy the [.env](./.env) file to your `%AppData%\Local\PlayGames-RichPresence\` folder
+    - Download and copy the [.env](./.env) file to your `%LocalAppData%\PlayGames-RichPresence\` folder
 
 Alternatively you can run the following PowerShell script to achieve similar functionality!
 

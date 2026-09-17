@@ -44,16 +44,8 @@ internal static class Program
             ExtendedLogging = true
             #endif
         };
-        InitializeVelopack();
 
-        ApplicationLogs.Initialize();
-
-        SingleInstanceApplication.Ensure();
-
-        ApplicationLogs.ListenToEvents();
-
-        if (Arguments.AutoUpdate)
-            Task.Run(AutoUpdate.CheckForUpdates);
+        InitializeApplication();
 
         _richPresenceHandler = new();
         var reader = new PlayGamesAppSessionMessageReader(_filePath);
@@ -78,14 +70,46 @@ internal static class Program
         _processBinding?.Dispose();
     }
 
+    private static void InitializeApplication()
+    {
+        InitializeVelopack();
+        InitializeLogs();
+
+        SingleInstanceApplication.Ensure();
+
+        ApplicationLogs.ListenToEvents();
+
+        if (Arguments.AutoUpdate)
+            Task.Run(AutoUpdate.CheckForUpdates);
+    }
+
+    private static bool _logsInitialized;
+    private static void InitializeLogs()
+    {
+        if (_logsInitialized)
+            return;
+
+        var wd = new DirectoryInfo(Environment.CurrentDirectory);
+        ApplicationLogs.Initialize(AutoUpdate.UpdateManager.Value is { IsInstalled: true, IsPortable: false }
+            ? wd.Parent! // The setup version's persistent storage is in the parent directory (This would be %LocalAppData%/MuMu-RichPresence)
+            : wd);
+        _logsInitialized = true;
+    }
+
     private static void InitializeVelopack()
     {
         var app = VelopackApp.Build();
         app.OnBeforeUninstallFastCallback(OnUninstall);
+        app.OnAfterUpdateFastCallback(OnUpdate);
         app.Run();
     }
 
     private static void OnUninstall(SemanticVersion version) => Startup.RemoveStartup(Application.ProductName!);
+    private static void OnUpdate(SemanticVersion version)
+    {
+        InitializeLogs();
+        Log.Information("Updated to {Version}!", version);
+    }
 
     private static void SuppressExceptions(Action act)
     {

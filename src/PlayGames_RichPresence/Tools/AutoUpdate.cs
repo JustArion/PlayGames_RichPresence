@@ -14,11 +14,22 @@ internal static class AutoUpdate
     private static readonly AsyncRetryPolicy<UpdateInfo?> _retryPolicy = Policy<UpdateInfo?>
         .Handle<Exception>()
         .WaitAndRetryAsync(MAX_RETRIES, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt) - 1));
-    internal static async Task CheckForUpdates()
+
+    public static readonly Lazy<UpdateManager> UpdateManager = new(() => new UpdateManager(new GithubSource($"https://github.com/JustArion/{REPO_NAME}", null, false)));
+
+    /// <summary>
+    /// Checks for updates with a retry policy of retrying 3 times, with the time between each retry expanding exponentially
+    /// </summary>
+    /// <returns>
+    /// If the standalone version of the app is used, this will return false<br/>
+    /// If checking for updates fails, returns false<br/>
+    /// If there's no update, returns false
+    /// </returns>
+    public static async Task CheckForUpdates()
     {
         try
         {
-            var manager = new UpdateManager(new GithubSource($"https://github.com/JustArion/{REPO_NAME}", null, false));
+            var manager = UpdateManager.Value;
 
             if (manager.IsInstalled)
                 Log.Information("The Velopack Update Manager is present");
@@ -35,20 +46,18 @@ internal static class AutoUpdate
             }
 
             var version = response.Result;
-            if (version == null) return;
+            if (version == null)
+                return;
 
             await manager.DownloadUpdatesAsync(version);
 
             Log.Information("Updates are ready to be installed and will be applied on next restart ({Version})",
                 version.TargetFullRelease.Version);
             // manager.ApplyUpdatesAndRestart(version);
-
-            return;
         }
         catch (Exception e)
         {
             Log.Error(e, "Failed to update using Velopack");
-            return;
         }
     }
 }
